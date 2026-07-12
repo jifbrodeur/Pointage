@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Compteur de cartes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --felt:#175239;
+    --felt-dark:#0E3A27;
+    --cream:#FBF7EE;
+    --ink:#22201C;
+    --gold:#C9A227;
+    --muted:#8A857A;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;}
+  body{
+    font-family:'Outfit',sans-serif;
+    background:
+      radial-gradient(ellipse at 50% -10%, #1E6647 0%, var(--felt) 45%, var(--felt-dark) 100%);
+    color:var(--cream);
+    min-height:100vh;
+    padding:max(16px, env(safe-area-inset-top)) 14px calc(24px + env(safe-area-inset-bottom));
+    user-select:none;-webkit-user-select:none;
+  }
+  header{text-align:center;margin-bottom:14px;}
+  h1{
+    font-family:'Fraunces',serif;font-weight:800;font-size:1.5rem;letter-spacing:.01em;
+  }
+  h1 .pips{color:var(--gold);font-size:1.1rem;letter-spacing:.15em;}
+  .sub{font-size:.78rem;color:#BFD8C9;margin-top:2px;}
+
+  /* Sélecteur de bond */
+  .step-bar{
+    display:flex;gap:6px;justify-content:center;flex-wrap:wrap;
+    margin-bottom:16px;
+  }
+  .step-label{
+    width:100%;text-align:center;font-size:.7rem;text-transform:uppercase;
+    letter-spacing:.14em;color:#9FC4B0;margin-bottom:2px;
+  }
+  .chip{
+    border:1.5px solid rgba(251,247,238,.35);background:rgba(0,0,0,.18);
+    color:var(--cream);border-radius:999px;padding:8px 15px;
+    font-family:'Outfit',sans-serif;font-weight:600;font-size:.95rem;cursor:pointer;
+    transition:transform .1s;
+  }
+  .chip:active{transform:scale(.94);}
+  .chip.on{
+    background:var(--gold);border-color:var(--gold);color:var(--ink);
+    box-shadow:0 2px 10px rgba(201,162,39,.45);
+  }
+
+  /* Grille de joueurs */
+  .grid{
+    display:grid;grid-template-columns:repeat(2,1fr);gap:12px;
+    max-width:560px;margin:0 auto;
+  }
+  @media(min-width:600px){.grid{grid-template-columns:repeat(3,1fr);}}
+
+  .card{
+    background:var(--cream);color:var(--ink);
+    border-radius:16px;overflow:hidden;
+    box-shadow:0 5px 16px rgba(0,0,0,.35), inset 0 0 0 1px rgba(0,0,0,.06);
+    display:flex;flex-direction:column;
+  }
+  .card-top{
+    padding:8px 10px 6px;display:flex;align-items:center;gap:6px;
+    color:#fff;
+  }
+  .card-top .pip{font-size:.85rem;opacity:.9;}
+  .card-top .name{
+    font-weight:700;font-size:.95rem;flex:1;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;
+  }
+  .card-top .edit{
+    background:rgba(255,255,255,.25);border:none;color:#fff;border-radius:8px;
+    width:26px;height:26px;font-size:.8rem;cursor:pointer;flex-shrink:0;
+  }
+  .score{
+    font-family:'Fraunces',serif;font-weight:800;font-size:2.6rem;
+    text-align:center;padding:10px 4px 6px;line-height:1;
+    font-variant-numeric:tabular-nums;
+  }
+  .score.neg{color:#B3372F;}
+  .btns{display:flex;border-top:1px solid rgba(0,0,0,.08);}
+  .btns button{
+    flex:1;border:none;background:none;font-size:1.6rem;font-weight:700;
+    padding:12px 0;cursor:pointer;color:var(--ink);font-family:'Outfit',sans-serif;
+    transition:background .1s;
+  }
+  .btns button:active{background:rgba(0,0,0,.08);}
+  .btns .minus{border-right:1px solid rgba(0,0,0,.08);color:#B3372F;}
+  .btns .plus{color:#1E6647;}
+
+  /* Boutons d'action */
+  .actions{
+    display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap;
+    max-width:560px;margin-left:auto;margin-right:auto;
+  }
+  .btn{
+    border:1.5px solid rgba(251,247,238,.4);background:rgba(0,0,0,.18);
+    color:var(--cream);border-radius:12px;padding:12px 18px;
+    font-family:'Outfit',sans-serif;font-weight:600;font-size:.9rem;cursor:pointer;
+  }
+  .btn:active{transform:scale(.96);}
+  .btn.primary{background:var(--cream);color:var(--ink);border-color:var(--cream);}
+
+  /* Fiche d'édition (modale) */
+  .overlay{
+    position:fixed;inset:0;background:rgba(10,25,18,.75);
+    display:none;align-items:center;justify-content:center;padding:20px;z-index:10;
+  }
+  .overlay.open{display:flex;}
+  .sheet{
+    background:var(--cream);color:var(--ink);border-radius:20px;
+    padding:20px;width:100%;max-width:380px;
+    box-shadow:0 10px 40px rgba(0,0,0,.5);
+  }
+  .sheet h2{font-family:'Fraunces',serif;font-weight:800;font-size:1.2rem;margin-bottom:14px;}
+  .sheet label{font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);display:block;margin-bottom:6px;}
+  .sheet input{
+    width:100%;padding:12px;border:1.5px solid #D8D2C4;border-radius:10px;
+    font-family:'Outfit',sans-serif;font-size:1rem;margin-bottom:16px;background:#fff;
+  }
+  .swatches{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+  .swatch{
+    width:40px;height:40px;border-radius:50%;border:3px solid transparent;cursor:pointer;
+  }
+  .swatch.on{border-color:var(--ink);transform:scale(1.1);}
+  .sheet-actions{display:flex;gap:10px;}
+  .sheet-actions .btn{flex:1;border-color:#D8D2C4;color:var(--ink);background:#fff;}
+  .sheet-actions .btn.primary{background:var(--felt);color:#fff;border-color:var(--felt);}
+  .sheet-actions .btn.danger{color:#B3372F;border-color:#E5B6B2;}
+
+  .empty{
+    text-align:center;color:#BFD8C9;font-size:.95rem;padding:30px 20px;
+    max-width:300px;margin:0 auto;line-height:1.5;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1><span class="pips">♠ ♥</span> Compteur de cartes <span class="pips">♦ ♣</span></h1>
+  <div class="sub">Jusqu'à 6 joueurs</div>
+</header>
+
+<div class="step-bar" id="stepBar">
+  <div class="step-label">Bond de points</div>
+</div>
+
+<div class="grid" id="grid"></div>
+<div class="empty" id="empty">Aucun joueur pour l'instant.<br>Touche « Ajouter un joueur » pour commencer la partie.</div>
+
+<div class="actions">
+  <button class="btn primary" id="addBtn">+ Ajouter un joueur</button>
+  <button class="btn" id="resetBtn">Remise à zéro</button>
+</div>
+
+<!-- Modale ajout/édition -->
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <h2 id="sheetTitle">Nouveau joueur</h2>
+    <label for="nameInput">Nom du joueur</label>
+    <input type="text" id="nameInput" maxlength="14" placeholder="Ex. : Chantal" autocomplete="off">
+    <label>Couleur</label>
+    <div class="swatches" id="swatches"></div>
+    <div class="sheet-actions">
+      <button class="btn danger" id="deleteBtn" style="display:none">Retirer</button>
+      <button class="btn" id="cancelBtn">Annuler</button>
+      <button class="btn primary" id="saveBtn">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLORS = ['#D64545','#3E7CB1','#E8A13D','#7E5FB0','#2FA69A','#D96A9C','#5EA557','#5F6E82'];
+const STEPS = [1,5,10,25,50,100];
+const PIPS = ['♠','♥','♦','♣','♠','♥'];
+
+let players = [];      // {name, color, score}
+let step = 10;
+let editIndex = null;  // null = ajout
+let selColor = COLORS[0];
+
+const grid = document.getElementById('grid');
+const empty = document.getElementById('empty');
+const stepBar = document.getElementById('stepBar');
+const overlay = document.getElementById('overlay');
+const nameInput = document.getElementById('nameInput');
+const swatchesEl = document.getElementById('swatches');
+
+// --- Bonds ---
+STEPS.forEach(s => {
+  const b = document.createElement('button');
+  b.className = 'chip' + (s === step ? ' on' : '');
+  b.textContent = s;
+  b.onclick = () => {
+    step = s;
+    stepBar.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', +c.textContent === s));
+  };
+  stepBar.appendChild(b);
+});
+
+// --- Pastilles de couleur ---
+COLORS.forEach(c => {
+  const d = document.createElement('button');
+  d.className = 'swatch';
+  d.style.background = c;
+  d.onclick = () => {
+    selColor = c;
+    swatchesEl.querySelectorAll('.swatch').forEach(s => s.classList.toggle('on', s.style.background === d.style.background));
+  };
+  swatchesEl.appendChild(d);
+});
+
+function render(){
+  grid.innerHTML = '';
+  empty.style.display = players.length ? 'none' : 'block';
+  players.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <div class="card-top" style="background:${p.color}">
+        <span class="pip">${PIPS[i]}</span>
+        <span class="name">${escapeHtml(p.name)}</span>
+        <button class="edit" aria-label="Modifier ${escapeHtml(p.name)}">✎</button>
+      </div>
+      <div class="score ${p.score < 0 ? 'neg' : ''}">${p.score}</div>
+      <div class="btns">
+        <button class="minus" aria-label="Enlever ${'' + step} points">−</button>
+        <button class="plus" aria-label="Ajouter ${'' + step} points">+</button>
+      </div>`;
+    card.querySelector('.minus').onclick = () => { p.score -= step; render(); };
+    card.querySelector('.plus').onclick  = () => { p.score += step; render(); };
+    card.querySelector('.edit').onclick  = () => openSheet(i);
+    grid.appendChild(card);
+  });
+}
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function openSheet(index){
+  editIndex = index;
+  const isEdit = index !== null;
+  document.getElementById('sheetTitle').textContent = isEdit ? 'Modifier le joueur' : 'Nouveau joueur';
+  document.getElementById('deleteBtn').style.display = isEdit ? 'block' : 'none';
+  nameInput.value = isEdit ? players[index].name : '';
+  selColor = isEdit ? players[index].color : COLORS[players.length % COLORS.length];
+  swatchesEl.querySelectorAll('.swatch').forEach((s, i) => s.classList.toggle('on', COLORS[i] === selColor));
+  overlay.classList.add('open');
+  setTimeout(() => nameInput.focus(), 100);
+}
+
+document.getElementById('addBtn').onclick = () => {
+  if(players.length >= 6){ alert('Maximum de 6 joueurs!'); return; }
+  openSheet(null);
+};
+
+document.getElementById('saveBtn').onclick = () => {
+  const name = nameInput.value.trim();
+  if(!name){ nameInput.focus(); return; }
+  if(editIndex === null){
+    players.push({name, color:selColor, score:0});
+  } else {
+    players[editIndex].name = name;
+    players[editIndex].color = selColor;
+  }
+  overlay.classList.remove('open');
+  render();
+};
+
+document.getElementById('deleteBtn').onclick = () => {
+  if(confirm('Retirer ce joueur de la partie?')){
+    players.splice(editIndex, 1);
+    overlay.classList.remove('open');
+    render();
+  }
+};
+
+document.getElementById('cancelBtn').onclick = () => overlay.classList.remove('open');
+overlay.onclick = e => { if(e.target === overlay) overlay.classList.remove('open'); };
+
+document.getElementById('resetBtn').onclick = () => {
+  if(players.length && confirm('Remettre tous les scores à zéro?')){
+    players.forEach(p => p.score = 0);
+    render();
+  }
+};
+
+render();
+</script>
+</body>
+</html>
