@@ -88,14 +88,25 @@
     font-variant-numeric:tabular-nums;
   }
   .score.neg{color:#B3372F;}
-  .btns{display:flex;border-top:1px solid rgba(0,0,0,.08);}
+  .btns{display:flex;border-top:1px solid rgba(0,0,0,.08);align-items:stretch;}
+  .btns .amount{
+    width:34%;border:none;border-left:1px solid rgba(0,0,0,.08);
+    border-right:1px solid rgba(0,0,0,.08);
+    text-align:center;font-family:'Outfit',sans-serif;font-weight:600;
+    font-size:1rem;color:var(--ink);background:rgba(0,0,0,.03);
+    -moz-appearance:textfield;appearance:textfield;min-width:0;
+  }
+  .btns .amount::-webkit-outer-spin-button,
+  .btns .amount::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  .btns .amount::placeholder{color:#B5AF9F;font-weight:500;}
+  .btns .amount:focus{outline:2px solid var(--gold);outline-offset:-2px;background:#fff;}
   .btns button{
     flex:1;border:none;background:none;font-size:1.6rem;font-weight:700;
     padding:12px 0;cursor:pointer;color:var(--ink);font-family:'Outfit',sans-serif;
     transition:background .1s;
   }
   .btns button:active{background:rgba(0,0,0,.08);}
-  .btns .minus{border-right:1px solid rgba(0,0,0,.08);color:#B3372F;}
+  .btns .minus{color:#B3372F;}
   .btns .plus{color:#1E6647;}
 
   /* Boutons d'action */
@@ -204,6 +215,7 @@ STEPS.forEach(s => {
   b.onclick = () => {
     step = s;
     stepBar.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', +c.textContent === s));
+    render();
   };
   stepBar.appendChild(b);
 });
@@ -234,11 +246,18 @@ function render(){
       </div>
       <div class="score ${p.score < 0 ? 'neg' : ''}">${p.score}</div>
       <div class="btns">
-        <button class="minus" aria-label="Enlever ${'' + step} points">−</button>
-        <button class="plus" aria-label="Ajouter ${'' + step} points">+</button>
+        <button class="minus" aria-label="Enlever des points">−</button>
+        <input class="amount" type="number" inputmode="numeric" pattern="[0-9]*"
+               placeholder="${step}" aria-label="Montant personnalisé">
+        <button class="plus" aria-label="Ajouter des points">+</button>
       </div>`;
-    card.querySelector('.minus').onclick = () => { p.score -= step; render(); };
-    card.querySelector('.plus').onclick  = () => { p.score += step; render(); };
+    const amountInput = card.querySelector('.amount');
+    const getAmount = () => {
+      const v = parseInt(amountInput.value, 10);
+      return (isNaN(v) ? step : Math.abs(v));
+    };
+    card.querySelector('.minus').onclick = () => { p.score -= getAmount(); render(); };
+    card.querySelector('.plus').onclick  = () => { p.score += getAmount(); render(); };
     card.querySelector('.edit').onclick  = () => openSheet(i);
     grid.appendChild(card);
   });
