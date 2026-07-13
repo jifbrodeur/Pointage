@@ -297,6 +297,8 @@
     display:flex;align-items:center;justify-content:center;gap:8px;
   }
   .btn .ico{font-size:1.3rem;line-height:1;font-weight:700;}
+  .btn.icon-btn{width:48px;flex:none;padding:11px 0;font-size:1.3rem;}
+  .btn:disabled{opacity:.35;pointer-events:none;}
   .btn:active{transform:scale(.96);}
   .btn.primary{
     flex:1;background:var(--gold);color:var(--on-gold);border-color:var(--gold);
@@ -400,6 +402,7 @@
 
 <div class="actions">
   <div class="inner">
+    <button class="btn icon-btn" id="undoBtn" disabled>↶</button>
     <button class="btn primary" id="addBtn">+ Ajouter un joueur</button>
     <button class="btn" id="resetBtn">Remise à zéro</button>
   </div>
@@ -470,7 +473,7 @@ const I18N = {
     confirmRemove:"Retirer ce joueur de la partie?",
     confirmReset:"Remettre tous les scores à zéro?", maxAlert:"Maximum de 6 joueurs!",
     minusA:"Enlever des points", plusA:"Ajouter des points",
-    amountA:"Montant personnalisé", customA:"Bond personnalisé", gearA:"Paramètres de"
+    amountA:"Montant personnalisé", customA:"Bond personnalisé", gearA:"Paramètres de", undoA:"Annuler la dernière action"
   },
   en: {
     title:"Score Keeper", step:"Point step",
@@ -488,7 +491,7 @@ const I18N = {
     confirmRemove:"Remove this player from the game?",
     confirmReset:"Reset all scores to zero?", maxAlert:"Maximum of 6 players!",
     minusA:"Remove points", plusA:"Add points",
-    amountA:"Custom amount", customA:"Custom step", gearA:"Settings for"
+    amountA:"Custom amount", customA:"Custom step", gearA:"Settings for", undoA:"Undo last action"
   },
   it: {
     title:"Score Keeper", step:"Passo dei punti",
@@ -506,7 +509,7 @@ const I18N = {
     confirmRemove:"Rimuovere questo giocatore dalla partita?",
     confirmReset:"Azzerare tutti i punteggi?", maxAlert:"Massimo 6 giocatori!",
     minusA:"Togli punti", plusA:"Aggiungi punti",
-    amountA:"Importo personalizzato", customA:"Passo personalizzato", gearA:"Impostazioni di"
+    amountA:"Importo personalizzato", customA:"Passo personalizzato", gearA:"Impostazioni di", undoA:"Annulla l'ultima azione"
   },
   es: {
     title:"Score Keeper", step:"Salto de puntos",
@@ -524,7 +527,7 @@ const I18N = {
     confirmRemove:"¿Quitar a este jugador de la partida?",
     confirmReset:"¿Poner todos los puntos a cero?", maxAlert:"¡Máximo 6 jugadores!",
     minusA:"Quitar puntos", plusA:"Sumar puntos",
-    amountA:"Cantidad personalizada", customA:"Salto personalizado", gearA:"Ajustes de"
+    amountA:"Cantidad personalizada", customA:"Salto personalizado", gearA:"Ajustes de", undoA:"Deshacer la última acción"
   }
 };
 const LANGS = ['fr','en','it','es'];
@@ -536,6 +539,10 @@ if(!LANGS.includes(lang)){
 let L = I18N[lang];
 
 let players = [];      // {name, color, score}
+try{ players = JSON.parse(localStorage.getItem('cc-players')) || []; }catch(e){ players = []; }
+players = players.filter(p => p && typeof p.name === 'string')
+                 .map(p => ({name:p.name.slice(0,30), color:p.color || COLORS[0], score:+p.score || 0}))
+                 .slice(0,6);
 let defaultStep = parseInt(localStorage.getItem('cc-step'), 10);
 if(isNaN(defaultStep) || !STEPS.includes(defaultStep)) defaultStep = 10;
 let step = defaultStep;
@@ -696,6 +703,7 @@ function applyLang(){
   document.getElementById('cancelBtn').innerHTML = '<span class="ico">↩</span>' + L.cancel;
   document.getElementById('saveBtn').innerHTML = '<span class="ico">✓</span>' + L.save;
   customStep.setAttribute('aria-label', L.customA);
+  document.getElementById('undoBtn').setAttribute('aria-label', L.undoA);
   localStorage.setItem('cc-lang', lang);
   render();
 }
@@ -774,7 +782,31 @@ COLORS.forEach(c => {
   swatchesEl.appendChild(d);
 });
 
+// --- Persistance et annulation ---
+function snapshot(){
+  return JSON.stringify(players.map(p => ({name:p.name, color:p.color, score:p.score})));
+}
+function saveState(){
+  localStorage.setItem('cc-players', snapshot());
+}
+const undoStack = [];
+function pushUndo(){
+  undoStack.push(snapshot());
+  if(undoStack.length > 50) undoStack.shift();
+  updateUndoBtn();
+}
+function updateUndoBtn(){
+  document.getElementById('undoBtn').disabled = !undoStack.length;
+}
+document.getElementById('undoBtn').onclick = () => {
+  if(!undoStack.length) return;
+  players = JSON.parse(undoStack.pop());
+  updateUndoBtn();
+  render();
+};
+
 function render(popIndex){
+  saveState();
   list.innerHTML = '';
   empty.style.display = players.length ? 'none' : 'block';
   players.forEach((p, i) => {
@@ -806,8 +838,9 @@ function render(popIndex){
       const v = parseInt(amountInput.value, 10);
       return (isNaN(v) ? step : Math.abs(v));
     };
-    row.querySelector('.minus').onclick = () => { p.score -= getAmount(); render(i); };
+    row.querySelector('.minus').onclick = () => { pushUndo(); p.score -= getAmount(); render(i); };
     row.querySelector('.plus').onclick  = () => {
+      pushUndo();
       const wasWinner = goal > 0 && p.score >= goal;
       p.score += getAmount();
       render(i);
@@ -843,6 +876,7 @@ document.getElementById('addBtn').onclick = () => {
 document.getElementById('saveBtn').onclick = () => {
   const name = nameInput.value.trim();
   if(!name){ nameInput.focus(); return; }
+  pushUndo();
   if(editIndex === null){
     players.push({name, color:selColor, score:0});
   } else {
@@ -854,6 +888,7 @@ document.getElementById('saveBtn').onclick = () => {
 };
 
 document.getElementById('zeroBtn').onclick = () => {
+  pushUndo();
   players[editIndex].score = 0;
   overlay.classList.remove('open');
   render(editIndex);
@@ -861,6 +896,7 @@ document.getElementById('zeroBtn').onclick = () => {
 
 document.getElementById('deleteBtn').onclick = () => {
   if(confirm(L.confirmRemove)){
+    pushUndo();
     players.splice(editIndex, 1);
     overlay.classList.remove('open');
     render();
@@ -872,6 +908,7 @@ overlay.onclick = e => { if(e.target === overlay) overlay.classList.remove('open
 
 document.getElementById('resetBtn').onclick = () => {
   if(players.length && confirm(L.confirmReset)){
+    pushUndo();
     players.forEach(p => p.score = 0);
     render();
   }
