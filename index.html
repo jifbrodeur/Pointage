@@ -12,9 +12,11 @@
 <link rel="manifest" href="manifest.json">
 <title>Score Keeper</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Outfit:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Karla:wght@400;600;700&family=Orbitron:wght@500;700;900&family=Rubik:wght@400;600;700&family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
 <style>
   :root{
+    --font-display:'Bricolage Grotesque',sans-serif;
+    --font-body:'Outfit',sans-serif;
     --bg:#0A100C;
     --glow:#14291D;
     --surface:rgba(255,255,255,.05);
@@ -48,10 +50,66 @@
     --field:rgba(23,43,30,.06);
     --grain:.035;
   }
+
+  /* ----- Habillages (skins) ----- */
+  [data-skin="sobre"]{
+    --font-display:'Fraunces',serif;
+    --font-body:'Karla',sans-serif;
+    --bg:#17181C; --glow:#242730;
+    --gold:#B99C63; --on-gold:#171005;
+    --red:#C97B6B; --green:#8FAF8B;
+    --sheet:#1C1E24; --bar:rgba(23,24,28,.78);
+  }
+  [data-skin="sobre"][data-theme="light"]{
+    --bg:#F4F2ED; --glow:#E7E3D9;
+    --text:#24262A; --dim:#70726F;
+    --gold:#8A6F3F; --on-gold:#FFFDF6;
+    --red:#A8503F; --green:#4F7259;
+    --sheet:#FCFBF7; --bar:rgba(244,242,237,.85);
+    --surface:rgba(36,38,42,.05); --surface-2:rgba(36,38,42,.08);
+    --line:rgba(36,38,42,.14); --field:rgba(36,38,42,.06);
+  }
+  [data-skin="retro"]{
+    --font-display:'Orbitron',sans-serif;
+    --font-body:'Rubik',sans-serif;
+    --bg:#140A24; --glow:#321253;
+    --text:#F5EFFF; --dim:#A093C0;
+    --gold:#FF2E97; --on-gold:#FFFFFF;
+    --red:#FF3864; --green:#00F5B8;
+    --sheet:#1E1033; --bar:rgba(20,10,36,.78);
+  }
+  [data-skin="retro"][data-theme="light"]{
+    --bg:#FBF2F6; --glow:#CBEFF5;
+    --text:#2B1B33; --dim:#8E7F9E;
+    --gold:#E11D87; --on-gold:#FFFFFF;
+    --red:#D6244C; --green:#00997A;
+    --sheet:#FFFAFD; --bar:rgba(251,242,246,.85);
+    --surface:rgba(43,27,51,.05); --surface-2:rgba(43,27,51,.08);
+    --line:rgba(43,27,51,.14); --field:rgba(43,27,51,.06);
+  }
+  [data-skin="mono"]{
+    --font-display:'IBM Plex Mono',monospace;
+    --font-body:'IBM Plex Sans',sans-serif;
+    --bg:#0B0B0B; --glow:#191919;
+    --text:#F2F2F2; --dim:#8C8C8C;
+    --gold:#F2F2F2; --on-gold:#111111;
+    --red:#9E9E9E; --green:#F2F2F2;
+    --sheet:#151515; --bar:rgba(11,11,11,.82);
+    --line:rgba(255,255,255,.14);
+  }
+  [data-skin="mono"][data-theme="light"]{
+    --bg:#FAFAFA; --glow:#ECECEC;
+    --text:#141414; --dim:#6E6E6E;
+    --gold:#141414; --on-gold:#FFFFFF;
+    --red:#5A5A5A; --green:#141414;
+    --sheet:#FFFFFF; --bar:rgba(250,250,250,.88);
+    --surface:rgba(0,0,0,.04); --surface-2:rgba(0,0,0,.07);
+    --line:rgba(0,0,0,.15); --field:rgba(0,0,0,.05);
+  }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
   body{
-    font-family:'Outfit',sans-serif;
+    font-family:var(--font-body);
     background:
       radial-gradient(1100px 700px at 50% -220px, var(--glow) 0%, var(--bg) 62%);
     background-color:var(--bg);
@@ -69,16 +127,16 @@
   main{position:relative;z-index:1;max-width:640px;margin:0 auto;}
 
   header{
-    display:flex;align-items:center;justify-content:space-between;
-    margin-bottom:18px;gap:10px;
+    display:flex;flex-direction:column;gap:10px;margin-bottom:16px;
   }
+  .title-wrap{text-align:center;}
   h1{
-    font-family:'Bricolage Grotesque',sans-serif;font-weight:800;
+    font-family:var(--font-display);font-weight:800;
     font-size:1.35rem;letter-spacing:-.01em;
   }
   h1 .pips{color:var(--gold);font-size:1rem;letter-spacing:.1em;}
   .sub{font-size:.75rem;color:var(--dim);margin-top:1px;}
-  .head-ctrl{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .head-ctrl{display:flex;align-items:center;gap:10px;align-self:flex-end;}
   .settings-btn{
     width:42px;height:42px;border-radius:12px;flex-shrink:0;cursor:pointer;
     border:1px solid var(--line);background:var(--surface-2);color:var(--text);
@@ -122,13 +180,13 @@
   .chip{
     flex:1;min-width:42px;border:none;background:transparent;
     color:var(--dim);border-radius:999px;padding:9px 0;
-    font-family:'Outfit',sans-serif;font-weight:600;font-size:.95rem;cursor:pointer;
+    font-family:var(--font-body);font-weight:600;font-size:.95rem;cursor:pointer;
     transition:background .15s,color .15s,transform .1s;
   }
   .chip:active{transform:scale(.94);}
   .chip.on{
     background:var(--gold);color:var(--on-gold);
-    box-shadow:0 2px 14px rgba(240,185,62,.35);
+    box-shadow:0 2px 14px color-mix(in srgb, var(--gold) 40%, transparent);
   }
   .chip-input{
     flex:1.3;min-width:62px;text-align:center;
@@ -168,7 +226,7 @@
   .who{
     flex:1;min-width:0;display:flex;align-items:center;gap:8px;
     background:none;border:none;text-align:left;padding:0;
-    color:var(--text);cursor:pointer;font-family:'Outfit',sans-serif;
+    color:var(--text);cursor:pointer;font-family:var(--font-body);
   }
   .who .pip{color:var(--c);font-size:1.1rem;flex-shrink:0;}
   .who .name{
@@ -184,7 +242,7 @@
   }
   .gear-btn:active{transform:scale(.9) rotate(40deg);}
   .score{
-    font-family:'Bricolage Grotesque',sans-serif;font-weight:800;
+    font-family:var(--font-display);font-weight:800;
     font-size:2.1rem;line-height:1.05;letter-spacing:-.02em;
     font-variant-numeric:tabular-nums;
   }
@@ -196,7 +254,7 @@
   .ctrl button{
     width:42px;height:42px;border-radius:12px;border:1px solid var(--line);
     background:var(--surface-2);font-size:1.4rem;font-weight:700;cursor:pointer;
-    font-family:'Outfit',sans-serif;transition:transform .1s,background .15s;
+    font-family:var(--font-body);transition:transform .1s,background .15s;
     display:flex;align-items:center;justify-content:center;
   }
   .ctrl button:active{transform:scale(.92);}
@@ -205,7 +263,7 @@
   .ctrl .amount{
     width:42px;height:42px;border-radius:12px;border:1px solid var(--line);
     background:var(--field);color:var(--text);text-align:center;
-    font-family:'Outfit',sans-serif;font-weight:600;font-size:.95rem;
+    font-family:var(--font-body);font-weight:600;font-size:.95rem;
     -moz-appearance:textfield;appearance:textfield;
   }
   .ctrl .amount::-webkit-outer-spin-button,
@@ -232,7 +290,7 @@
   .btn{
     border:1px solid var(--line);background:var(--surface-2);
     color:var(--text);border-radius:14px;padding:14px 18px;
-    font-family:'Outfit',sans-serif;font-weight:600;font-size:.95rem;cursor:pointer;
+    font-family:var(--font-body);font-weight:600;font-size:.95rem;cursor:pointer;
     transition:transform .1s;
     display:flex;align-items:center;justify-content:center;gap:8px;
   }
@@ -240,7 +298,7 @@
   .btn:active{transform:scale(.96);}
   .btn.primary{
     flex:1;background:var(--gold);color:var(--on-gold);border-color:var(--gold);
-    box-shadow:0 4px 20px rgba(240,185,62,.3);
+    box-shadow:0 4px 20px color-mix(in srgb, var(--gold) 35%, transparent);
   }
 
   /* Fiche joueur (feuille en bas) */
@@ -259,11 +317,11 @@
     animation:slideUp .3s cubic-bezier(.2,.8,.3,1);
   }
   @keyframes slideUp{from{transform:translateY(40px);opacity:0;}to{transform:none;opacity:1;}}
-  .sheet h2{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:1.2rem;margin-bottom:16px;}
+  .sheet h2{font-family:var(--font-display);font-weight:800;font-size:1.2rem;margin-bottom:16px;}
   .sheet label{font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.14em;color:var(--dim);display:block;margin-bottom:8px;}
   .sheet input{
     width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;
-    font-family:'Outfit',sans-serif;font-size:1rem;margin-bottom:18px;
+    font-family:var(--font-body);font-size:1rem;margin-bottom:18px;
     background:var(--field);color:var(--text);
   }
   .sheet input:focus{outline:2px solid var(--gold);outline-offset:-1px;}
@@ -285,12 +343,12 @@
 
   /* Victoire */
   .row.winner{
-    border-color:rgba(240,185,62,.65);
+    border-color:color-mix(in srgb, var(--gold) 65%, transparent);
     animation:winGlow 1.6s ease-in-out infinite;
   }
   @keyframes winGlow{
-    0%,100%{box-shadow:0 0 0 rgba(240,185,62,0);}
-    50%{box-shadow:0 0 24px rgba(240,185,62,.5);}
+    0%,100%{box-shadow:0 0 0 transparent;}
+    50%{box-shadow:0 0 24px color-mix(in srgb, var(--gold) 55%, transparent);}
   }
   .crown{color:var(--gold);font-size:1.15rem;flex-shrink:0;animation:pop .4s cubic-bezier(.2,.8,.3,1);}
   .confetti{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden;}
@@ -302,10 +360,10 @@
   .win-banner{
     position:absolute;top:36%;left:50%;transform:translateX(-50%);
     background:var(--gold);color:var(--on-gold);
-    font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:1.15rem;
+    font-family:var(--font-display);font-weight:800;font-size:1.15rem;
     padding:16px 24px;border-radius:18px;white-space:nowrap;max-width:92vw;
     overflow:hidden;text-overflow:ellipsis;
-    box-shadow:0 8px 40px rgba(240,185,62,.5);
+    box-shadow:0 8px 40px color-mix(in srgb, var(--gold) 55%, transparent);
     animation:bannerIn .45s cubic-bezier(.2,.8,.3,1);
   }
   @keyframes bannerIn{from{transform:translateX(-50%) scale(.6);opacity:0;}to{transform:translateX(-50%) scale(1);opacity:1;}}
@@ -315,16 +373,16 @@
 
 <main>
   <header>
-    <div>
-      <h1><span class="pips">♠♥</span> <span id="tTitle">Score Keeper</span></h1>
-      <div class="sub" id="gameSub" style="display:none"></div>
-    </div>
     <div class="head-ctrl">
       <button class="settings-btn" id="settingsBtn" aria-label="Paramètres de l'application">⚙</button>
       <button class="switch" id="themeBtn" role="switch" aria-checked="true" aria-label="Mode sombre">
         <span class="sw-icon">☀</span><span class="sw-icon">☾</span>
         <span class="knob" id="knob">☾</span>
       </button>
+    </div>
+    <div class="title-wrap">
+      <h1><span class="pips">♠♥</span> <span id="tTitle">Score Keeper</span></h1>
+      <div class="sub" id="gameSub" style="display:none"></div>
     </div>
   </header>
 
@@ -357,6 +415,8 @@
     <input type="number" id="goalInput" inputmode="numeric" min="1">
     <label id="tDefaultStep">Bond par défaut</label>
     <div class="step-bar" id="defaultStepBar" style="margin-bottom:18px"></div>
+    <label id="tSkin">Style</label>
+    <div class="step-bar" id="skinBar" style="margin-bottom:18px"></div>
     <label id="tLang">Langue</label>
     <div class="step-bar" id="langBar"></div>
     <div class="set-note" id="maxNote">Jusqu'à 6 joueurs</div>
@@ -398,6 +458,7 @@ const I18N = {
     add:"Ajouter un joueur", reset:"Remise à zéro",
     game:"Nom du jeu", goal:"Points pour gagner", goalPh:"Aucun",
     winFmt:"🏆 {n} gagne la partie!",
+    skinLabel:"Style", skins:{sobre:"Sobre",modern:"Moderne",retro:"Années 80",mono:"Mono"},
     settings:"Paramètres", defaultStep:"Bond par défaut", lang:"Langue",
     maxNote:"Jusqu'à 6 joueurs", close:"Fermer",
     newPlayer:"Nouveau joueur", playerSettings:"Paramètres du joueur",
@@ -414,6 +475,7 @@ const I18N = {
     add:"Add a player", reset:"Reset scores",
     game:"Game name", goal:"Points to win", goalPh:"None",
     winFmt:"🏆 {n} wins the game!",
+    skinLabel:"Style", skins:{sobre:"Classic",modern:"Modern",retro:"80s",mono:"Mono"},
     settings:"Settings", defaultStep:"Default step", lang:"Language",
     maxNote:"Up to 6 players", close:"Close",
     newPlayer:"New player", playerSettings:"Player settings",
@@ -430,6 +492,7 @@ const I18N = {
     add:"Aggiungi un giocatore", reset:"Azzera i punteggi",
     game:"Nome del gioco", goal:"Punti per vincere", goalPh:"Nessuno",
     winFmt:"🏆 {n} vince la partita!",
+    skinLabel:"Stile", skins:{sobre:"Sobrio",modern:"Moderno",retro:"Anni 80",mono:"Mono"},
     settings:"Impostazioni", defaultStep:"Passo predefinito", lang:"Lingua",
     maxNote:"Fino a 6 giocatori", close:"Chiudi",
     newPlayer:"Nuovo giocatore", playerSettings:"Impostazioni giocatore",
@@ -446,6 +509,7 @@ const I18N = {
     add:"Añadir un jugador", reset:"Reiniciar puntos",
     game:"Nombre del juego", goal:"Puntos para ganar", goalPh:"Ninguno",
     winFmt:"🏆 ¡{n} gana la partida!",
+    skinLabel:"Estilo", skins:{sobre:"Sobrio",modern:"Moderno",retro:"Años 80",mono:"Mono"},
     settings:"Ajustes", defaultStep:"Salto predeterminado", lang:"Idioma",
     maxNote:"Hasta 6 jugadores", close:"Cerrar",
     newPlayer:"Nuevo jugador", playerSettings:"Ajustes del jugador",
@@ -480,6 +544,12 @@ const nameInput = document.getElementById('nameInput');
 const swatchesEl = document.getElementById('swatches');
 const sheetTools = document.getElementById('sheetTools');
 
+function updateThemeColorMeta(){
+  requestAnimationFrame(() => {
+    document.getElementById('themeColor').content = getComputedStyle(document.body).backgroundColor;
+  });
+}
+
 // --- Thème clair / sombre ---
 const themeBtn = document.getElementById('themeBtn');
 let theme = localStorage.getItem('cc-theme') || 'dark';
@@ -487,7 +557,7 @@ function applyTheme(){
   document.documentElement.dataset.theme = theme;
   themeBtn.setAttribute('aria-checked', theme === 'dark');
   document.getElementById('knob').textContent = theme === 'dark' ? '☾' : '☀';
-  document.getElementById('themeColor').content = theme === 'dark' ? '#0A100C' : '#F5F2E9';
+  updateThemeColorMeta();
   localStorage.setItem('cc-theme', theme);
 }
 themeBtn.onclick = () => { theme = theme === 'dark' ? 'light' : 'dark'; applyTheme(); };
@@ -545,6 +615,29 @@ function celebrate(name){
   setTimeout(() => c.remove(), 3200);
 }
 
+// --- Habillage (skin) ---
+const SKINS = ['sobre','modern','retro','mono'];
+let skin = localStorage.getItem('cc-skin');
+if(!SKINS.includes(skin)) skin = 'modern';
+function applySkin(){
+  document.documentElement.dataset.skin = skin;
+  localStorage.setItem('cc-skin', skin);
+  updateThemeColorMeta();
+}
+const skinBar = document.getElementById('skinBar');
+SKINS.forEach(k => {
+  const b = document.createElement('button');
+  b.className = 'chip' + (k === skin ? ' on' : '');
+  b.dataset.skin = k;
+  b.onclick = () => {
+    skin = k;
+    applySkin();
+    skinBar.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.skin === k));
+  };
+  skinBar.appendChild(b);
+});
+applySkin();
+
 // --- Langue ---
 function applyLang(){
   L = I18N[lang];
@@ -560,6 +653,8 @@ function applyLang(){
   document.getElementById('tGoal').textContent = L.goal;
   document.getElementById('goalInput').placeholder = L.goalPh;
   document.getElementById('tDefaultStep').textContent = L.defaultStep;
+  document.getElementById('tSkin').textContent = L.skinLabel;
+  skinBar.querySelectorAll('.chip').forEach(c => c.textContent = L.skins[c.dataset.skin]);
   document.getElementById('tLang').textContent = L.lang;
   document.getElementById('maxNote').textContent = L.maxNote;
   document.getElementById('settingsClose').innerHTML = '<span class="ico">✓</span>' + L.close;

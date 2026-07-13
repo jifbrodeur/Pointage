@@ -1,7 +1,7 @@
 {
   "name": "Score Keeper",
   "short_name": "Score Keeper",
-  "start_url": "./compteur-cartes.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#0A100C",
   "theme_color": "#0A100C",
