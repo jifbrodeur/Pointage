@@ -138,6 +138,34 @@
   .sub{
     flex:1;min-width:0;text-align:center;font-size:.95rem;font-weight:600;
     color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    background:none;border:none;cursor:pointer;font-family:var(--font-body);padding:0;
+  }
+  .sub .caret{opacity:.6;font-size:.8em;}
+  .score-wrap{display:flex;align-items:center;gap:8px;min-width:0;}
+  .rank{
+    font-size:.72rem;font-weight:700;color:var(--dim);
+    border:1px solid var(--line);border-radius:8px;padding:3px 7px;flex-shrink:0;
+    font-variant-numeric:tabular-nums;
+  }
+  .rank.lead{color:var(--on-gold);background:var(--gold);border-color:var(--gold);}
+  .games-list{max-height:40vh;overflow-y:auto;}
+  .game-row{
+    display:flex;align-items:center;gap:10px;padding:12px 12px;
+    border:1px solid var(--line);border-radius:12px;margin-bottom:8px;
+    background:var(--field);cursor:pointer;
+  }
+  .game-row.on{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset;}
+  .game-row .g-pip{color:var(--gold);flex-shrink:0;}
+  .game-row .g-name{flex:1;min-width:0;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .game-row .g-meta{color:var(--dim);font-size:.82rem;flex-shrink:0;}
+  .game-row .g-del{
+    width:32px;height:32px;border-radius:9px;border:1px solid var(--line);
+    background:none;color:var(--red);font-size:.95rem;cursor:pointer;flex-shrink:0;
+  }
+  .suggest{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+  .suggest .chip{
+    flex:none;padding:9px 14px;border:1px solid var(--line);
+    background:var(--surface-2);color:var(--text);min-width:0;
   }
   .settings-btn{
     width:42px;height:42px;border-radius:12px;flex-shrink:0;cursor:pointer;
@@ -380,7 +408,7 @@
     <h1><span class="pips" id="pipL">♠♥</span> <span id="tTitle">Score Keeper</span> <span class="pips" id="pipR">♦♣</span></h1>
     <div class="sub-line">
       <button class="settings-btn" id="settingsBtn" aria-label="Paramètres de l'application">⚙</button>
-      <div class="sub" id="gameSub"></div>
+      <button class="sub" id="gameSub"></button>
       <button class="switch" id="themeBtn" role="switch" aria-checked="true" aria-label="Mode sombre">
         <span class="sw-icon">☀</span><span class="sw-icon">☾</span>
         <span class="knob" id="knob">☾</span>
@@ -405,6 +433,21 @@
     <button class="btn icon-btn" id="undoBtn" disabled>↶</button>
     <button class="btn primary" id="addBtn">+ Ajouter un joueur</button>
     <button class="btn" id="resetBtn">Remise à zéro</button>
+  </div>
+</div>
+
+<!-- Feuille des parties -->
+<div class="overlay" id="gamesOverlay">
+  <div class="sheet">
+    <h2 id="tGames">Parties</h2>
+    <div class="games-list" id="gamesList"></div>
+    <div class="sheet-tools show" style="margin-top:14px">
+      <button class="btn zero" id="newGameBtn">Nouvelle</button>
+      <button class="btn" id="dupGameBtn">Dupliquer</button>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn primary" id="gamesClose">Fermer</button>
+    </div>
   </div>
 </div>
 
@@ -439,6 +482,8 @@
     <input type="text" id="nameInput" maxlength="30" placeholder="Ex. : Chantal" autocomplete="off">
     <label id="tColor">Couleur</label>
     <div class="swatches" id="swatches"></div>
+    <label id="tRecent" style="display:none">Joueurs récents</label>
+    <div class="suggest" id="suggestWrap" style="display:none"></div>
     <div class="sheet-tools" id="sheetTools">
       <button class="btn zero" id="zeroBtn">↺ Score à 0</button>
       <button class="btn danger" id="deleteBtn">✕ Retirer</button>
@@ -465,6 +510,8 @@ const I18N = {
     winFmt:"🏆 {n} gagne la partie!",
     skinLabel:"Style", skins:{sobre:"Sobre",modern:"Moderne",retro:"Années 80",mono:"Mono"},
     typeLabel:"Type de jeu", types:{cards:"Cartes",board:"Plateau",dice:"Dés",other:"Autre"},
+    games:"Parties", newGame:"Nouvelle", dupGame:"Dupliquer", gameFallback:"Partie",
+    confirmDeleteGame:"Supprimer cette partie?", recent:"Joueurs récents",
     settings:"Paramètres", defaultStep:"Bond par défaut", lang:"Langue",
     maxNote:"Jusqu'à 6 joueurs", close:"Fermer",
     newPlayer:"Nouveau joueur", playerSettings:"Paramètres du joueur",
@@ -483,6 +530,8 @@ const I18N = {
     winFmt:"🏆 {n} wins the game!",
     skinLabel:"Style", skins:{sobre:"Classic",modern:"Modern",retro:"80s",mono:"Mono"},
     typeLabel:"Game type", types:{cards:"Cards",board:"Board",dice:"Dice",other:"Other"},
+    games:"Games", newGame:"New", dupGame:"Duplicate", gameFallback:"Game",
+    confirmDeleteGame:"Delete this game?", recent:"Recent players",
     settings:"Settings", defaultStep:"Default step", lang:"Language",
     maxNote:"Up to 6 players", close:"Close",
     newPlayer:"New player", playerSettings:"Player settings",
@@ -501,6 +550,8 @@ const I18N = {
     winFmt:"🏆 {n} vince la partita!",
     skinLabel:"Stile", skins:{sobre:"Sobrio",modern:"Moderno",retro:"Anni 80",mono:"Mono"},
     typeLabel:"Tipo di gioco", types:{cards:"Carte",board:"Tavolo",dice:"Dadi",other:"Altro"},
+    games:"Partite", newGame:"Nuova", dupGame:"Duplica", gameFallback:"Partita",
+    confirmDeleteGame:"Eliminare questa partita?", recent:"Giocatori recenti",
     settings:"Impostazioni", defaultStep:"Passo predefinito", lang:"Lingua",
     maxNote:"Fino a 6 giocatori", close:"Chiudi",
     newPlayer:"Nuovo giocatore", playerSettings:"Impostazioni giocatore",
@@ -519,6 +570,8 @@ const I18N = {
     winFmt:"🏆 ¡{n} gana la partida!",
     skinLabel:"Estilo", skins:{sobre:"Sobrio",modern:"Moderno",retro:"Años 80",mono:"Mono"},
     typeLabel:"Tipo de juego", types:{cards:"Cartas",board:"Tablero",dice:"Dados",other:"Otro"},
+    games:"Partidas", newGame:"Nueva", dupGame:"Duplicar", gameFallback:"Partida",
+    confirmDeleteGame:"¿Eliminar esta partida?", recent:"Jugadores recientes",
     settings:"Ajustes", defaultStep:"Salto predeterminado", lang:"Idioma",
     maxNote:"Hasta 6 jugadores", close:"Cerrar",
     newPlayer:"Nuevo jugador", playerSettings:"Ajustes del jugador",
@@ -538,11 +591,37 @@ if(!LANGS.includes(lang)){
 }
 let L = I18N[lang];
 
-let players = [];      // {name, color, score}
-try{ players = JSON.parse(localStorage.getItem('cc-players')) || []; }catch(e){ players = []; }
-players = players.filter(p => p && typeof p.name === 'string')
-                 .map(p => ({name:p.name.slice(0,30), color:p.color || COLORS[0], score:+p.score || 0}))
-                 .slice(0,6);
+// --- Parties (multi-tableaux) ---
+const TYPE_KEYS = ['cards','board','dice','other'];
+function cleanPlayers(arr){
+  return (Array.isArray(arr) ? arr : []).filter(p => p && typeof p.name === 'string')
+    .map(p => ({name:p.name.slice(0,30), color:p.color || COLORS[0], score:+p.score || 0}))
+    .slice(0,6);
+}
+function newGameObj(){
+  return {id:'g' + Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+          name:'', type:'cards', goal:0, players:[]};
+}
+let games = [];
+try{ games = JSON.parse(localStorage.getItem('cc-games')) || []; }catch(e){ games = []; }
+games = (Array.isArray(games) ? games : [])
+  .filter(g => g && typeof g === 'object')
+  .map(g => ({id:String(g.id || '') || newGameObj().id, name:String(g.name || '').slice(0,30),
+              type:TYPE_KEYS.includes(g.type) ? g.type : 'cards',
+              goal:(+g.goal >= 1 ? Math.floor(+g.goal) : 0), players:cleanPlayers(g.players)}));
+if(!games.length){
+  // migration depuis l'ancien format (une seule partie)
+  const g = newGameObj();
+  try{ g.players = cleanPlayers(JSON.parse(localStorage.getItem('cc-players'))); }catch(e){}
+  g.name = (localStorage.getItem('cc-game') || '').slice(0,30);
+  const t = localStorage.getItem('cc-type');
+  g.type = TYPE_KEYS.includes(t) ? t : 'cards';
+  const gl = parseInt(localStorage.getItem('cc-goal'), 10);
+  g.goal = (isNaN(gl) || gl < 1) ? 0 : gl;
+  games = [g];
+}
+let cur = games.find(g => g.id === localStorage.getItem('cc-current')) || games[0];
+let players = cur.players;   // {name, color, score}
 let defaultStep = parseInt(localStorage.getItem('cc-step'), 10);
 if(isNaN(defaultStep) || !STEPS.includes(defaultStep)) defaultStep = 10;
 let step = defaultStep;
@@ -586,35 +665,38 @@ settingsOverlay.onclick = e => { if(e.target === settingsOverlay) settingsOverla
 const gameInput = document.getElementById('gameInput');
 const goalInput = document.getElementById('goalInput');
 const gameSub = document.getElementById('gameSub');
-let gameName = localStorage.getItem('cc-game') || '';
-let goal = parseInt(localStorage.getItem('cc-goal'), 10);
-if(isNaN(goal) || goal < 1) goal = 0; // 0 = pas de limite
+let gameName = cur.name;
+let goal = cur.goal; // 0 = pas de limite
 gameInput.value = gameName;
 goalInput.value = goal || '';
+function curDisplayName(g){
+  return g.name || (L.gameFallback + ' ' + (games.indexOf(g) + 1));
+}
 function updateGameSub(){
-  gameSub.textContent = gameName;
+  gameSub.innerHTML = escapeHtml(curDisplayName(cur)) + ' <span class="caret">▾</span>';
 }
 gameInput.oninput = () => {
   gameName = gameInput.value.trim();
-  localStorage.setItem('cc-game', gameName);
+  cur.name = gameName;
+  saveState();
   updateGameSub();
 };
 goalInput.oninput = () => {
   const v = parseInt(goalInput.value, 10);
   goal = (isNaN(v) || v < 1) ? 0 : v;
-  localStorage.setItem('cc-goal', goal || '');
+  cur.goal = goal;
   render();
 };
 updateGameSub();
 
 // --- Type de jeu (icônes du titre) ---
 const TYPE_ICONS = {cards:['♠♥','♦♣'], board:['♜','♞'], dice:['⚄','⚂'], other:['★','★']};
-let gameType = localStorage.getItem('cc-type');
-if(!TYPE_ICONS[gameType]) gameType = 'cards';
+let gameType = cur.type;
 function applyType(){
   document.getElementById('pipL').textContent = TYPE_ICONS[gameType][0];
   document.getElementById('pipR').textContent = TYPE_ICONS[gameType][1];
-  localStorage.setItem('cc-type', gameType);
+  cur.type = gameType;
+  saveState();
 }
 const typeBar = document.getElementById('typeBar');
 Object.keys(TYPE_ICONS).forEach(k => {
@@ -629,6 +711,76 @@ Object.keys(TYPE_ICONS).forEach(k => {
   typeBar.appendChild(b);
 });
 applyType();
+
+// --- Fiche des parties (changer / nouvelle / dupliquer) ---
+const gamesOverlay = document.getElementById('gamesOverlay');
+function loadCur(){
+  players = cur.players;
+  gameName = cur.name;
+  goal = cur.goal;
+  gameType = TYPE_ICONS[cur.type] ? cur.type : 'cards';
+  gameInput.value = gameName;
+  goalInput.value = goal || '';
+  typeBar.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.type === gameType));
+  applyType();
+  updateGameSub();
+  undoStack.length = 0;
+  updateUndoBtn();
+  render();
+}
+function renderGames(){
+  const wrap = document.getElementById('gamesList');
+  wrap.innerHTML = '';
+  games.forEach((g, gi) => {
+    const div = document.createElement('div');
+    div.className = 'game-row' + (g === cur ? ' on' : '');
+    div.innerHTML = `
+      <span class="g-pip">${TYPE_ICONS[g.type][0]}</span>
+      <span class="g-name">${escapeHtml(curDisplayName(g))}</span>
+      <span class="g-meta">${g.players.length} 👤</span>
+      <button class="g-del" aria-label="${L.remove}">✕</button>`;
+    div.onclick = e => {
+      if(e.target.classList.contains('g-del')) return;
+      cur = g;
+      loadCur();
+      renderGames();
+    };
+    div.querySelector('.g-del').onclick = () => {
+      if(!confirm(L.confirmDeleteGame)) return;
+      games.splice(gi, 1);
+      if(!games.length) games.push(newGameObj());
+      if(cur === g){ cur = games[0]; loadCur(); }
+      saveState();
+      renderGames();
+    };
+    wrap.appendChild(div);
+  });
+}
+gameSub.onclick = () => { renderGames(); gamesOverlay.classList.add('open'); };
+document.getElementById('gamesClose').onclick = () => gamesOverlay.classList.remove('open');
+gamesOverlay.onclick = e => { if(e.target === gamesOverlay) gamesOverlay.classList.remove('open'); };
+document.getElementById('newGameBtn').onclick = () => {
+  const g = newGameObj();
+  g.type = cur.type;
+  g.goal = cur.goal;
+  games.push(g);
+  cur = g;
+  loadCur();
+  gamesOverlay.classList.remove('open');
+  settingsOverlay.classList.add('open'); // pour nommer la nouvelle partie
+  setTimeout(() => gameInput.focus(), 100);
+};
+document.getElementById('dupGameBtn').onclick = () => {
+  const g = newGameObj();
+  g.name = cur.name;
+  g.type = cur.type;
+  g.goal = cur.goal;
+  g.players = cur.players.map(p => ({name:p.name, color:p.color, score:0}));
+  games.push(g);
+  cur = g;
+  loadCur();
+  gamesOverlay.classList.remove('open');
+};
 
 // --- Célébration de victoire ---
 function celebrate(name){
@@ -695,6 +847,12 @@ function applyLang(){
   document.getElementById('tLang').textContent = L.lang;
   document.getElementById('maxNote').textContent = L.maxNote;
   document.getElementById('settingsClose').innerHTML = '<span class="ico">✓</span>' + L.close;
+  document.getElementById('tGames').textContent = L.games;
+  document.getElementById('newGameBtn').innerHTML = '<span class="ico">+</span>' + L.newGame;
+  document.getElementById('dupGameBtn').innerHTML = '<span class="ico">⧉</span>' + L.dupGame;
+  document.getElementById('gamesClose').innerHTML = '<span class="ico">✓</span>' + L.close;
+  document.getElementById('tRecent').textContent = L.recent;
+  updateGameSub();
   document.getElementById('tName').textContent = L.name;
   nameInput.placeholder = L.namePh;
   document.getElementById('tColor').textContent = L.color;
@@ -787,7 +945,9 @@ function snapshot(){
   return JSON.stringify(players.map(p => ({name:p.name, color:p.color, score:p.score})));
 }
 function saveState(){
-  localStorage.setItem('cc-players', snapshot());
+  cur.players = players;
+  localStorage.setItem('cc-games', JSON.stringify(games));
+  localStorage.setItem('cc-current', cur.id);
 }
 const undoStack = [];
 function pushUndo(){
@@ -809,6 +969,7 @@ function render(popIndex){
   saveState();
   list.innerHTML = '';
   empty.style.display = players.length ? 'none' : 'block';
+  const sortedScores = players.map(p => p.score).sort((a, b) => b - a);
   players.forEach((p, i) => {
     const row = document.createElement('div');
     const isWinner = goal > 0 && p.score >= goal;
@@ -823,7 +984,10 @@ function render(popIndex){
         <button class="gear-btn" aria-label="${L.gearA} ${escapeHtml(p.name)}">⚙</button>
       </div>
       <div class="row-bot">
-        <span class="score ${p.score < 0 ? 'neg' : ''}${i === popIndex ? ' pop' : ''}">${p.score}</span>
+        <span class="score-wrap">
+          ${players.length > 1 ? `<span class="rank${sortedScores.indexOf(p.score) === 0 ? ' lead' : ''}">#${sortedScores.indexOf(p.score) + 1}</span>` : ''}
+          <span class="score ${p.score < 0 ? 'neg' : ''}${i === popIndex ? ' pop' : ''}">${p.score}</span>
+        </span>
         <div class="ctrl">
           <button class="minus" aria-label="${L.minusA}">−</button>
           <input class="amount" type="number" inputmode="numeric" pattern="[0-9]*"
@@ -864,8 +1028,39 @@ function openSheet(index){
   nameInput.value = isEdit ? players[index].name : '';
   selColor = isEdit ? players[index].color : COLORS[players.length % COLORS.length];
   swatchesEl.querySelectorAll('.swatch').forEach((s, i) => s.classList.toggle('on', COLORS[i] === selColor));
+  buildSuggestions(isEdit);
   overlay.classList.add('open');
   if(!isEdit) setTimeout(() => nameInput.focus(), 100);
+}
+
+// Profils réutilisables : joueurs connus des autres parties
+function buildSuggestions(isEdit){
+  const wrap = document.getElementById('suggestWrap');
+  const lbl = document.getElementById('tRecent');
+  wrap.innerHTML = '';
+  let count = 0;
+  if(!isEdit){
+    const inGame = new Set(players.map(p => p.name.toLowerCase()));
+    const seen = new Map();
+    games.forEach(g => g.players.forEach(pp => {
+      const k = pp.name.toLowerCase();
+      if(!inGame.has(k)) seen.set(k, pp);
+    }));
+    [...seen.values()].slice(0, 8).forEach(pp => {
+      const c = document.createElement('button');
+      c.className = 'chip';
+      c.innerHTML = `<span style="color:${pp.color}">●</span> ${escapeHtml(pp.name)}`;
+      c.onclick = () => {
+        nameInput.value = pp.name;
+        if(COLORS.includes(pp.color)) selColor = pp.color;
+        swatchesEl.querySelectorAll('.swatch').forEach((sw, i2) => sw.classList.toggle('on', COLORS[i2] === selColor));
+      };
+      wrap.appendChild(c);
+      count++;
+    });
+  }
+  lbl.style.display = count ? 'block' : 'none';
+  wrap.style.display = count ? 'flex' : 'none';
 }
 
 document.getElementById('addBtn').onclick = () => {

@@ -29,11 +29,11 @@ Dernière mise à jour : 2026-07-13.
 - [x] **Persistance de la partie** : joueurs et scores sauvegardés (`localStorage`), la partie survit au rechargement et à la fermeture de l'app
 - [x] **Annuler (undo)** : reprendre les dernières actions (points, ajout/retrait de joueur, remises à zéro), pile de 50 actions
 
-## Phase 2 — Cœur de la parité
+## Phase 2 — Cœur de la parité (fait)
 
-- [ ] **Classement en direct** : indicateur de position (1er, 2e…) ou tri optionnel des joueurs par score
-- [ ] **Parties multiples** : sauvegarder plusieurs tableaux nommés, reprendre une partie, dupliquer une partie (mêmes joueurs et règles)
-- [ ] **Profils de joueurs réutilisables** d'une partie à l'autre
+- [x] **Classement en direct** : indicateur de position (1er, 2e…) ou tri optionnel des joueurs par score
+- [x] **Parties multiples** : sauvegarder plusieurs tableaux nommés, reprendre une partie, dupliquer une partie (mêmes joueurs et règles)
+- [x] **Profils de joueurs réutilisables** d'une partie à l'autre
 
 ## Phase 3 — Confort et différenciation
 
@@ -55,4 +55,4 @@ Réservé aux apps natives iOS, impossible en PWA :
 ## Notes techniques
 
 - Une seule page `index.html` auto-suffisante (CSS + JS inline), hébergée sur GitHub Pages : https://jifbrodeur.github.io/Pointage/
-- Réglages persistés dans `localStorage` : thème (`cc-theme`), style (`cc-skin`), langue (`cc-lang`), bond par défaut (`cc-step`), nom du jeu (`cc-game`), type de jeu (`cc-type`), points pour gagner (`cc-goal`), joueurs (`cc-players`, phase 1)
+- Réglages persistés dans `localStorage` : thème (`cc-theme`), style (`cc-skin`), langue (`cc-lang`), bond par défaut (`cc-step`), nom du jeu (`cc-game`), type de jeu (`cc-type`), points pour gagner (`cc-goal`), parties et joueurs (`cc-games`, `cc-current`)
