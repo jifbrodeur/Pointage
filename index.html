@@ -148,6 +148,29 @@
     font-variant-numeric:tabular-nums;
   }
   .rank.lead{color:var(--on-gold);background:var(--gold);border-color:var(--gold);}
+  .step-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+  .step-head .step-label{margin-bottom:0;}
+  .timer-btn{
+    border:1px solid var(--line);background:var(--surface-2);color:var(--text);
+    border-radius:999px;padding:5px 14px;font-weight:700;font-size:.85rem;cursor:pointer;
+    font-family:var(--font-body);font-variant-numeric:tabular-nums;
+    display:inline-flex;align-items:center;gap:5px;transition:background .15s;
+  }
+  .timer-btn.running{background:var(--gold);color:var(--on-gold);border-color:var(--gold);}
+  .fx-chip{flex:none;padding:9px 20px;border:1px solid var(--line);min-width:70px;}
+  .hist-list{max-height:34vh;overflow-y:auto;margin-top:6px;}
+  .hist-row{
+    display:flex;align-items:center;gap:10px;padding:9px 4px;
+    border-bottom:1px solid var(--line);font-size:.9rem;
+  }
+  .hist-row:last-child{border-bottom:none;}
+  .h-time{color:var(--dim);font-variant-numeric:tabular-nums;flex-shrink:0;font-size:.8rem;}
+  .h-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;}
+  .h-meta{flex-shrink:0;font-weight:700;font-variant-numeric:tabular-nums;}
+  .h-pos{color:var(--green);}
+  .h-neg{color:var(--red);}
+  .stat-head{color:var(--dim);font-size:.8rem;margin-bottom:6px;text-transform:uppercase;letter-spacing:.1em;}
+  .hist-empty{color:var(--dim);text-align:center;padding:14px;}
   .games-list{max-height:40vh;overflow-y:auto;}
   .game-row{
     display:flex;align-items:center;gap:10px;padding:12px 12px;
@@ -346,6 +369,7 @@
     border-radius:24px 24px 0 0;
     padding:22px 20px calc(24px + env(safe-area-inset-bottom));
     width:100%;max-width:640px;
+    max-height:88vh;overflow-y:auto;
     animation:slideUp .3s cubic-bezier(.2,.8,.3,1);
   }
   @keyframes slideUp{from{transform:translateY(40px);opacity:0;}to{transform:none;opacity:1;}}
@@ -408,6 +432,7 @@
     <h1><span class="pips" id="pipL">♠♥</span> <span id="tTitle">Score Keeper</span> <span class="pips" id="pipR">♦♣</span></h1>
     <div class="sub-line">
       <button class="settings-btn" id="settingsBtn" aria-label="Paramètres de l'application">⚙</button>
+      <button class="settings-btn" id="histBtn" aria-label="Historique">≣</button>
       <button class="sub" id="gameSub"></button>
       <button class="switch" id="themeBtn" role="switch" aria-checked="true" aria-label="Mode sombre">
         <span class="sw-icon">☀</span><span class="sw-icon">☾</span>
@@ -417,7 +442,10 @@
   </header>
 
   <div class="step-wrap">
-    <div class="step-label" id="tStep">Bond de points</div>
+    <div class="step-head">
+      <div class="step-label" id="tStep">Bond de points</div>
+      <button class="timer-btn" id="timerBtn" style="display:none">⏱</button>
+    </div>
     <div class="step-bar" id="stepBar"></div>
   </div>
 
@@ -433,6 +461,22 @@
     <button class="btn icon-btn" id="undoBtn" disabled>↶</button>
     <button class="btn primary" id="addBtn">+ Ajouter un joueur</button>
     <button class="btn" id="resetBtn">Remise à zéro</button>
+  </div>
+</div>
+
+<!-- Feuille historique et statistiques -->
+<div class="overlay" id="histOverlay">
+  <div class="sheet">
+    <h2 id="tHist">Historique</h2>
+    <div id="statsBox"></div>
+    <div class="hist-list" id="histList"></div>
+    <div class="sheet-tools show" style="margin-top:14px">
+      <button class="btn zero" id="shareBtn">Partager</button>
+      <button class="btn" id="csvBtn">CSV</button>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn primary" id="histClose">Fermer</button>
+    </div>
   </div>
 </div>
 
@@ -461,6 +505,12 @@
     <div class="step-bar" id="typeBar" style="margin-bottom:18px"></div>
     <label for="goalInput" id="tGoal">Points pour gagner</label>
     <input type="number" id="goalInput" inputmode="numeric" min="1">
+    <label for="timerInput" id="tTimer">Minuterie de tour (secondes)</label>
+    <input type="number" id="timerInput" inputmode="numeric" min="5">
+    <div class="set-row">
+      <span class="set-label" id="tFx">Sons et vibration</span>
+      <button class="chip fx-chip on" id="fxBtn">On</button>
+    </div>
     <label id="tDefaultStep">Bond par défaut</label>
     <div class="step-bar" id="defaultStepBar" style="margin-bottom:18px"></div>
     <label id="tSkin">Style</label>
@@ -512,13 +562,15 @@ const I18N = {
     typeLabel:"Type de jeu", types:{cards:"Cartes",board:"Plateau",dice:"Dés",other:"Autre"},
     games:"Parties", newGame:"Nouvelle", dupGame:"Dupliquer", gameFallback:"Partie",
     confirmDeleteGame:"Supprimer cette partie?", recent:"Joueurs récents",
+    hist:"Historique", avg:"moy.", share:"Partager",
+    timerLabel:"Minuterie de tour (secondes)", fxLabel:"Sons et vibration",
     settings:"Paramètres", defaultStep:"Bond par défaut", lang:"Langue",
-    maxNote:"Jusqu'à 6 joueurs", close:"Fermer",
+    maxNote:"Jusqu'à 12 joueurs", close:"Fermer",
     newPlayer:"Nouveau joueur", playerSettings:"Paramètres du joueur",
     name:"Nom du joueur", namePh:"Ex. : Chantal", color:"Couleur",
     zero:"Score à 0", remove:"Retirer", cancel:"Annuler", save:"Enregistrer",
     confirmRemove:"Retirer ce joueur de la partie?",
-    confirmReset:"Remettre tous les scores à zéro?", maxAlert:"Maximum de 6 joueurs!",
+    confirmReset:"Remettre tous les scores à zéro?", maxAlert:"Maximum de 12 joueurs!",
     minusA:"Enlever des points", plusA:"Ajouter des points",
     amountA:"Montant personnalisé", customA:"Bond personnalisé", gearA:"Paramètres de", undoA:"Annuler la dernière action"
   },
@@ -532,13 +584,15 @@ const I18N = {
     typeLabel:"Game type", types:{cards:"Cards",board:"Board",dice:"Dice",other:"Other"},
     games:"Games", newGame:"New", dupGame:"Duplicate", gameFallback:"Game",
     confirmDeleteGame:"Delete this game?", recent:"Recent players",
+    hist:"History", avg:"avg", share:"Share",
+    timerLabel:"Turn timer (seconds)", fxLabel:"Sound & vibration",
     settings:"Settings", defaultStep:"Default step", lang:"Language",
-    maxNote:"Up to 6 players", close:"Close",
+    maxNote:"Up to 12 players", close:"Close",
     newPlayer:"New player", playerSettings:"Player settings",
     name:"Player name", namePh:"E.g. Sarah", color:"Color",
     zero:"Score to 0", remove:"Remove", cancel:"Cancel", save:"Save",
     confirmRemove:"Remove this player from the game?",
-    confirmReset:"Reset all scores to zero?", maxAlert:"Maximum of 6 players!",
+    confirmReset:"Reset all scores to zero?", maxAlert:"Maximum of 12 players!",
     minusA:"Remove points", plusA:"Add points",
     amountA:"Custom amount", customA:"Custom step", gearA:"Settings for", undoA:"Undo last action"
   },
@@ -552,13 +606,15 @@ const I18N = {
     typeLabel:"Tipo di gioco", types:{cards:"Carte",board:"Tavolo",dice:"Dadi",other:"Altro"},
     games:"Partite", newGame:"Nuova", dupGame:"Duplica", gameFallback:"Partita",
     confirmDeleteGame:"Eliminare questa partita?", recent:"Giocatori recenti",
+    hist:"Cronologia", avg:"media", share:"Condividi",
+    timerLabel:"Timer del turno (secondi)", fxLabel:"Suoni e vibrazione",
     settings:"Impostazioni", defaultStep:"Passo predefinito", lang:"Lingua",
-    maxNote:"Fino a 6 giocatori", close:"Chiudi",
+    maxNote:"Fino a 12 giocatori", close:"Chiudi",
     newPlayer:"Nuovo giocatore", playerSettings:"Impostazioni giocatore",
     name:"Nome del giocatore", namePh:"Es.: Chiara", color:"Colore",
     zero:"Punteggio a 0", remove:"Rimuovi", cancel:"Annulla", save:"Salva",
     confirmRemove:"Rimuovere questo giocatore dalla partita?",
-    confirmReset:"Azzerare tutti i punteggi?", maxAlert:"Massimo 6 giocatori!",
+    confirmReset:"Azzerare tutti i punteggi?", maxAlert:"Massimo 12 giocatori!",
     minusA:"Togli punti", plusA:"Aggiungi punti",
     amountA:"Importo personalizzato", customA:"Passo personalizzato", gearA:"Impostazioni di", undoA:"Annulla l'ultima azione"
   },
@@ -572,13 +628,15 @@ const I18N = {
     typeLabel:"Tipo de juego", types:{cards:"Cartas",board:"Tablero",dice:"Dados",other:"Otro"},
     games:"Partidas", newGame:"Nueva", dupGame:"Duplicar", gameFallback:"Partida",
     confirmDeleteGame:"¿Eliminar esta partida?", recent:"Jugadores recientes",
+    hist:"Historial", avg:"prom.", share:"Compartir",
+    timerLabel:"Temporizador de turno (segundos)", fxLabel:"Sonido y vibración",
     settings:"Ajustes", defaultStep:"Salto predeterminado", lang:"Idioma",
-    maxNote:"Hasta 6 jugadores", close:"Cerrar",
+    maxNote:"Hasta 12 jugadores", close:"Cerrar",
     newPlayer:"Nuevo jugador", playerSettings:"Ajustes del jugador",
     name:"Nombre del jugador", namePh:"Ej.: Carmen", color:"Color",
     zero:"Puntos a 0", remove:"Quitar", cancel:"Cancelar", save:"Guardar",
     confirmRemove:"¿Quitar a este jugador de la partida?",
-    confirmReset:"¿Poner todos los puntos a cero?", maxAlert:"¡Máximo 6 jugadores!",
+    confirmReset:"¿Poner todos los puntos a cero?", maxAlert:"¡Máximo 12 jugadores!",
     minusA:"Quitar puntos", plusA:"Sumar puntos",
     amountA:"Cantidad personalizada", customA:"Salto personalizado", gearA:"Ajustes de", undoA:"Deshacer la última acción"
   }
@@ -596,7 +654,7 @@ const TYPE_KEYS = ['cards','board','dice','other'];
 function cleanPlayers(arr){
   return (Array.isArray(arr) ? arr : []).filter(p => p && typeof p.name === 'string')
     .map(p => ({name:p.name.slice(0,30), color:p.color || COLORS[0], score:+p.score || 0}))
-    .slice(0,6);
+    .slice(0,12);
 }
 function newGameObj(){
   return {id:'g' + Date.now().toString(36) + Math.random().toString(36).slice(2,6),
@@ -608,7 +666,8 @@ games = (Array.isArray(games) ? games : [])
   .filter(g => g && typeof g === 'object')
   .map(g => ({id:String(g.id || '') || newGameObj().id, name:String(g.name || '').slice(0,30),
               type:TYPE_KEYS.includes(g.type) ? g.type : 'cards',
-              goal:(+g.goal >= 1 ? Math.floor(+g.goal) : 0), players:cleanPlayers(g.players)}));
+              goal:(+g.goal >= 1 ? Math.floor(+g.goal) : 0), players:cleanPlayers(g.players),
+              hist:Array.isArray(g.hist) ? g.hist.slice(0,200) : []}));
 if(!games.length){
   // migration depuis l'ancien format (une seule partie)
   const g = newGameObj();
@@ -782,8 +841,144 @@ document.getElementById('dupGameBtn').onclick = () => {
   gamesOverlay.classList.remove('open');
 };
 
+// --- Sons et vibration ---
+let fx = localStorage.getItem('cc-fx') !== 'off';
+let audioCtx = null;
+function beep(freq, dur){
+  if(!fx) return;
+  freq = freq || 880; dur = dur || .05;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.frequency.value = freq; o.type = 'sine';
+    g.gain.setValueAtTime(.15, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(.001, audioCtx.currentTime + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + dur);
+  }catch(e){}
+  if(navigator.vibrate) navigator.vibrate(10);
+}
+const fxBtn = document.getElementById('fxBtn');
+function updateFxBtn(){
+  fxBtn.textContent = fx ? 'On' : 'Off';
+  fxBtn.classList.toggle('on', fx);
+}
+fxBtn.onclick = () => {
+  fx = !fx;
+  localStorage.setItem('cc-fx', fx ? 'on' : 'off');
+  updateFxBtn();
+  beep(880);
+};
+updateFxBtn();
+
+// --- Journal des points et statistiques ---
+let wStats = {};
+try{ wStats = JSON.parse(localStorage.getItem('cc-stats')) || {}; }catch(e){ wStats = {}; }
+function logHist(entry){
+  cur.hist = cur.hist || [];
+  cur.hist.unshift(Object.assign({t: Date.now()}, entry));
+  if(cur.hist.length > 200) cur.hist.length = 200;
+}
+
+// --- Minuterie de tour ---
+let timerLen = parseInt(localStorage.getItem('cc-timer'), 10);
+if(isNaN(timerLen) || timerLen < 1) timerLen = 0;
+let timerLeft = 0, timerInt = null;
+const timerBtn = document.getElementById('timerBtn');
+const timerInput = document.getElementById('timerInput');
+timerInput.value = timerLen || '';
+function updateTimerBtn(){
+  timerBtn.style.display = timerLen ? 'inline-flex' : 'none';
+  timerBtn.textContent = '⏱ ' + (timerInt ? timerLeft : timerLen);
+  timerBtn.classList.toggle('running', !!timerInt);
+}
+timerBtn.onclick = () => {
+  clearInterval(timerInt);
+  timerLeft = timerLen;
+  timerInt = setInterval(() => {
+    timerLeft--;
+    if(timerLeft <= 0){
+      clearInterval(timerInt);
+      timerInt = null;
+      beep(660, .15); setTimeout(() => beep(660, .15), 200); setTimeout(() => beep(440, .3), 420);
+      if(navigator.vibrate) navigator.vibrate([120, 80, 120]);
+    }
+    updateTimerBtn();
+  }, 1000);
+  updateTimerBtn();
+};
+timerInput.oninput = () => {
+  const v = parseInt(timerInput.value, 10);
+  timerLen = (isNaN(v) || v < 1) ? 0 : v;
+  localStorage.setItem('cc-timer', timerLen || '');
+  clearInterval(timerInt); timerInt = null;
+  updateTimerBtn();
+};
+updateTimerBtn();
+
+// --- Fiche historique / statistiques / partage ---
+const histOverlay = document.getElementById('histOverlay');
+function renderHist(){
+  const box = document.getElementById('statsBox');
+  const profiles = new Map();
+  games.forEach(g => g.players.forEach(p => {
+    const o = profiles.get(p.name) || {sum:0, n:0, color:p.color};
+    o.sum += p.score; o.n++;
+    profiles.set(p.name, o);
+  }));
+  let html = `<div class="stat-head">${games.length} ${L.games.toLowerCase()}</div>`;
+  [...profiles.entries()]
+    .sort((a, b) => (wStats[b[0]] || 0) - (wStats[a[0]] || 0))
+    .slice(0, 12)
+    .forEach(([name, o]) => {
+      html += `<div class="hist-row"><span style="color:${o.color}">●</span>` +
+        `<span class="h-name">${escapeHtml(name)}</span>` +
+        `<span class="h-meta">🏆 ${wStats[name] || 0} · ${L.avg} ${Math.round(o.sum / o.n)}</span></div>`;
+    });
+  box.innerHTML = html;
+  const rows = (cur.hist || []).map(h => {
+    const d = new Date(h.t);
+    const tm = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    let what;
+    if(h.d !== undefined) what = `<span class="${h.d < 0 ? 'h-neg' : 'h-pos'}">${h.d > 0 ? '+' : ''}${h.d}</span>`;
+    else if(h.z) what = '→ 0';
+    else if(h.w) what = '🏆';
+    else what = '↺';
+    return `<div class="hist-row"><span class="h-time">${tm}</span>` +
+      `<span class="h-name">${escapeHtml(h.n || '—')}</span><span class="h-meta">${what}</span></div>`;
+  }).join('');
+  document.getElementById('histList').innerHTML = rows || '<div class="hist-empty">—</div>';
+}
+document.getElementById('histBtn').onclick = () => { renderHist(); histOverlay.classList.add('open'); };
+document.getElementById('histClose').onclick = () => histOverlay.classList.remove('open');
+histOverlay.onclick = e => { if(e.target === histOverlay) histOverlay.classList.remove('open'); };
+
+function resultsText(){
+  const sorted = [...players].sort((a, b) => b.score - a.score);
+  return '🏆 ' + curDisplayName(cur) + '\n' +
+    sorted.map((p, i) => `${i + 1}. ${p.name} — ${p.score}`).join('\n');
+}
+document.getElementById('shareBtn').onclick = async () => {
+  const text = resultsText();
+  try{ await navigator.share({text}); }
+  catch(e){ try{ await navigator.clipboard.writeText(text); }catch(e2){} }
+};
+document.getElementById('csvBtn').onclick = () => {
+  const sorted = [...players].sort((a, b) => b.score - a.score);
+  const csv = 'rank,player,score\n' +
+    sorted.map((p, i) => `${i + 1},"${p.name.replace(/"/g, '""')}",${p.score}`).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv'}));
+  a.download = 'score-keeper.csv';
+  a.click();
+};
+
 // --- Célébration de victoire ---
 function celebrate(name){
+  wStats[name] = (wStats[name] || 0) + 1;
+  localStorage.setItem('cc-stats', JSON.stringify(wStats));
+  logHist({n:name, w:1});
+  beep(660, .12); setTimeout(() => beep(880, .12), 130); setTimeout(() => beep(1100, .2), 260);
   const c = document.createElement('div');
   c.className = 'confetti';
   for(let i = 0; i < 40; i++){
@@ -852,6 +1047,14 @@ function applyLang(){
   document.getElementById('dupGameBtn').innerHTML = '<span class="ico">⧉</span>' + L.dupGame;
   document.getElementById('gamesClose').innerHTML = '<span class="ico">✓</span>' + L.close;
   document.getElementById('tRecent').textContent = L.recent;
+  document.getElementById('tHist').textContent = L.hist;
+  document.getElementById('histBtn').setAttribute('aria-label', L.hist);
+  document.getElementById('shareBtn').innerHTML = '<span class="ico">↗</span>' + L.share;
+  document.getElementById('csvBtn').innerHTML = '<span class="ico">⇩</span>CSV';
+  document.getElementById('histClose').innerHTML = '<span class="ico">✓</span>' + L.close;
+  document.getElementById('tTimer').textContent = L.timerLabel;
+  document.getElementById('timerInput').placeholder = L.goalPh;
+  document.getElementById('tFx').textContent = L.fxLabel;
   updateGameSub();
   document.getElementById('tName').textContent = L.name;
   nameInput.placeholder = L.namePh;
@@ -979,7 +1182,7 @@ function render(popIndex){
     row.innerHTML = `
       <div class="row-top">
         <button class="who" aria-label="${L.gearA} ${escapeHtml(p.name)}">
-          <span class="pip">${PIPS[i]}</span>${isWinner ? '<span class="crown">♛</span>' : ''}<span class="name">${escapeHtml(p.name)}</span>
+          <span class="pip">${PIPS[i % PIPS.length]}</span>${isWinner ? '<span class="crown">♛</span>' : ''}<span class="name">${escapeHtml(p.name)}</span>
         </button>
         <button class="gear-btn" aria-label="${L.gearA} ${escapeHtml(p.name)}">⚙</button>
       </div>
@@ -1002,11 +1205,21 @@ function render(popIndex){
       const v = parseInt(amountInput.value, 10);
       return (isNaN(v) ? step : Math.abs(v));
     };
-    row.querySelector('.minus').onclick = () => { pushUndo(); p.score -= getAmount(); render(i); };
+    row.querySelector('.minus').onclick = () => {
+      pushUndo();
+      const a = getAmount();
+      p.score -= a;
+      logHist({n:p.name, d:-a});
+      beep(440);
+      render(i);
+    };
     row.querySelector('.plus').onclick  = () => {
       pushUndo();
       const wasWinner = goal > 0 && p.score >= goal;
-      p.score += getAmount();
+      const a = getAmount();
+      p.score += a;
+      logHist({n:p.name, d:a});
+      beep(880);
       render(i);
       if(goal > 0 && !wasWinner && p.score >= goal) celebrate(p.name);
     };
@@ -1064,7 +1277,7 @@ function buildSuggestions(isEdit){
 }
 
 document.getElementById('addBtn').onclick = () => {
-  if(players.length >= 6){ alert(L.maxAlert); return; }
+  if(players.length >= 12){ alert(L.maxAlert); return; }
   openSheet(null);
 };
 
@@ -1084,6 +1297,7 @@ document.getElementById('saveBtn').onclick = () => {
 
 document.getElementById('zeroBtn').onclick = () => {
   pushUndo();
+  logHist({n:players[editIndex].name, z:1});
   players[editIndex].score = 0;
   overlay.classList.remove('open');
   render(editIndex);
@@ -1104,6 +1318,7 @@ overlay.onclick = e => { if(e.target === overlay) overlay.classList.remove('open
 document.getElementById('resetBtn').onclick = () => {
   if(players.length && confirm(L.confirmReset)){
     pushUndo();
+    logHist({r:1});
     players.forEach(p => p.score = 0);
     render();
   }

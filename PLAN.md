@@ -35,14 +35,14 @@ Dernière mise à jour : 2026-07-13.
 - [x] **Parties multiples** : sauvegarder plusieurs tableaux nommés, reprendre une partie, dupliquer une partie (mêmes joueurs et règles)
 - [x] **Profils de joueurs réutilisables** d'une partie à l'autre
 
-## Phase 3 — Confort et différenciation
+## Phase 3 — Confort et différenciation (fait)
 
-- [ ] **Historique des points** : journal des changements (qui, combien, quand) consultable par partie
-- [ ] **Statistiques** : parties jouées, victoires par joueur, moyennes
-- [ ] **Minuterie de tour** intégrée
-- [ ] **Plus de 6 joueurs** et/ou mode équipes
-- [ ] **Export / partage** : résultats en CSV ou image à partager
-- [ ] **Sons et vibration** au toucher (option dans les paramètres; haptique limitée sur iOS web)
+- [x] **Historique des points** : journal des changements (qui, combien, quand) consultable par partie
+- [x] **Statistiques** : parties jouées, victoires par joueur, moyennes
+- [x] **Minuterie de tour** intégrée
+- [x] **Plus de 6 joueurs** : limite portée à 12 (mode équipes non retenu pour l'instant)
+- [x] **Export / partage** : résultats en CSV ou image à partager
+- [x] **Sons et vibration** au toucher (option dans les paramètres; haptique limitée sur iOS web)
 
 ## Hors de portée (web app vs native)
 
