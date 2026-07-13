@@ -93,19 +93,19 @@
   .set-row .set-label{font-size:.95rem;font-weight:600;color:var(--text);}
   .set-note{font-size:.8rem;color:var(--dim);text-align:center;margin-top:16px;}
   .switch{
-    position:relative;width:66px;height:34px;border-radius:999px;flex-shrink:0;
+    position:relative;width:80px;height:42px;border-radius:999px;flex-shrink:0;
     border:1px solid var(--line);background:var(--field);cursor:pointer;
-    display:flex;align-items:center;justify-content:space-between;padding:0 9px;
+    display:flex;align-items:center;justify-content:space-between;padding:0 11px;
   }
-  .switch .sw-icon{font-size:.8rem;color:var(--dim);line-height:1;}
+  .switch .sw-icon{font-size:.9rem;color:var(--dim);line-height:1;}
   .switch .knob{
-    position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;
+    position:absolute;top:3px;left:3px;width:34px;height:34px;border-radius:50%;
     background:var(--gold);box-shadow:0 2px 8px rgba(0,0,0,.35);
     display:flex;align-items:center;justify-content:center;
-    font-size:.78rem;color:var(--on-gold);
+    font-size:.95rem;color:var(--on-gold);
     transition:transform .25s cubic-bezier(.2,.8,.3,1);
   }
-  [data-theme="dark"] .switch .knob{transform:translateX(32px);}
+  [data-theme="dark"] .switch .knob{transform:translateX(38px);}
 
   /* Sélecteur de bond */
   .step-wrap{margin-bottom:16px;}
@@ -234,7 +234,9 @@
     color:var(--text);border-radius:14px;padding:14px 18px;
     font-family:'Outfit',sans-serif;font-weight:600;font-size:.95rem;cursor:pointer;
     transition:transform .1s;
+    display:flex;align-items:center;justify-content:center;gap:8px;
   }
+  .btn .ico{font-size:1.3rem;line-height:1;font-weight:700;}
   .btn:active{transform:scale(.96);}
   .btn.primary{
     flex:1;background:var(--gold);color:var(--on-gold);border-color:var(--gold);
@@ -271,21 +273,52 @@
     transition:transform .12s;
   }
   .swatch.on{border-color:var(--text);transform:scale(1.12);}
-  .sheet-tools{display:none;gap:10px;margin-bottom:12px;}
+  .sheet-tools{display:none;gap:10px;margin-bottom:10px;}
   .sheet-tools.show{display:flex;}
-  .sheet-tools .btn{flex:1;font-size:.9rem;}
   .sheet-tools .zero{color:var(--gold);border-color:var(--line);}
   .sheet-tools .danger{color:var(--red);border-color:rgba(222,58,38,.35);background:rgba(222,58,38,.08);}
   .sheet-actions{display:flex;gap:10px;}
-  .sheet-actions .btn{flex:1;}
-  .sheet-actions .btn.primary{flex:1.4;}
+  .sheet .sheet-tools .btn,
+  .sheet .sheet-actions .btn{
+    flex:1;height:56px;padding:0 10px;font-size:.92rem;
+  }
+
+  /* Victoire */
+  .row.winner{
+    border-color:rgba(240,185,62,.65);
+    animation:winGlow 1.6s ease-in-out infinite;
+  }
+  @keyframes winGlow{
+    0%,100%{box-shadow:0 0 0 rgba(240,185,62,0);}
+    50%{box-shadow:0 0 24px rgba(240,185,62,.5);}
+  }
+  .crown{color:var(--gold);font-size:1.15rem;flex-shrink:0;animation:pop .4s cubic-bezier(.2,.8,.3,1);}
+  .confetti{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden;}
+  .confetti span{
+    position:absolute;top:-16px;width:10px;height:15px;border-radius:2px;
+    animation:fall 2.6s ease-in forwards;
+  }
+  @keyframes fall{to{transform:translateY(108vh) rotate(720deg);}}
+  .win-banner{
+    position:absolute;top:36%;left:50%;transform:translateX(-50%);
+    background:var(--gold);color:var(--on-gold);
+    font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:1.15rem;
+    padding:16px 24px;border-radius:18px;white-space:nowrap;max-width:92vw;
+    overflow:hidden;text-overflow:ellipsis;
+    box-shadow:0 8px 40px rgba(240,185,62,.5);
+    animation:bannerIn .45s cubic-bezier(.2,.8,.3,1);
+  }
+  @keyframes bannerIn{from{transform:translateX(-50%) scale(.6);opacity:0;}to{transform:translateX(-50%) scale(1);opacity:1;}}
 </style>
 </head>
 <body>
 
 <main>
   <header>
-    <h1><span class="pips">♠♥</span> <span id="tTitle">Compteur de cartes</span></h1>
+    <div>
+      <h1><span class="pips">♠♥</span> <span id="tTitle">Compteur de cartes</span></h1>
+      <div class="sub" id="gameSub" style="display:none"></div>
+    </div>
     <div class="head-ctrl">
       <button class="settings-btn" id="settingsBtn" aria-label="Paramètres de l'application">⚙</button>
       <button class="switch" id="themeBtn" role="switch" aria-checked="true" aria-label="Mode sombre">
@@ -318,6 +351,10 @@
 <div class="overlay" id="settingsOverlay">
   <div class="sheet">
     <h2 id="tSettings">Paramètres</h2>
+    <label for="gameInput" id="tGame">Nom du jeu</label>
+    <input type="text" id="gameInput" maxlength="30" autocomplete="off">
+    <label for="goalInput" id="tGoal">Points pour gagner</label>
+    <input type="number" id="goalInput" inputmode="numeric" min="1">
     <label id="tDefaultStep">Bond par défaut</label>
     <div class="step-bar" id="defaultStepBar" style="margin-bottom:18px"></div>
     <label id="tLang">Langue</label>
@@ -334,7 +371,7 @@
   <div class="sheet">
     <h2 id="sheetTitle">Nouveau joueur</h2>
     <label for="nameInput" id="tName">Nom du joueur</label>
-    <input type="text" id="nameInput" maxlength="14" placeholder="Ex. : Chantal" autocomplete="off">
+    <input type="text" id="nameInput" maxlength="30" placeholder="Ex. : Chantal" autocomplete="off">
     <label id="tColor">Couleur</label>
     <div class="swatches" id="swatches"></div>
     <div class="sheet-tools" id="sheetTools">
@@ -358,12 +395,14 @@ const I18N = {
   fr: {
     title:"Compteur de cartes", step:"Bond de points",
     empty:"Aucun joueur pour l'instant.<br>Touche « Ajouter un joueur » pour commencer la partie.",
-    add:"+ Ajouter un joueur", reset:"Remise à zéro",
+    add:"Ajouter un joueur", reset:"Remise à zéro",
+    game:"Nom du jeu", goal:"Points pour gagner", goalPh:"Aucun",
+    winFmt:"🏆 {n} gagne la partie!",
     settings:"Paramètres", defaultStep:"Bond par défaut", lang:"Langue",
     maxNote:"Jusqu'à 6 joueurs", close:"Fermer",
     newPlayer:"Nouveau joueur", playerSettings:"Paramètres du joueur",
     name:"Nom du joueur", namePh:"Ex. : Chantal", color:"Couleur",
-    zero:"↺ Score à 0", remove:"✕ Retirer", cancel:"Annuler", save:"Enregistrer",
+    zero:"Score à 0", remove:"Retirer", cancel:"Annuler", save:"Enregistrer",
     confirmRemove:"Retirer ce joueur de la partie?",
     confirmReset:"Remettre tous les scores à zéro?", maxAlert:"Maximum de 6 joueurs!",
     minusA:"Enlever des points", plusA:"Ajouter des points",
@@ -372,12 +411,14 @@ const I18N = {
   en: {
     title:"Card Score Counter", step:"Point step",
     empty:"No players yet.<br>Tap “Add a player” to start the game.",
-    add:"+ Add a player", reset:"Reset scores",
+    add:"Add a player", reset:"Reset scores",
+    game:"Game name", goal:"Points to win", goalPh:"None",
+    winFmt:"🏆 {n} wins the game!",
     settings:"Settings", defaultStep:"Default step", lang:"Language",
     maxNote:"Up to 6 players", close:"Close",
     newPlayer:"New player", playerSettings:"Player settings",
     name:"Player name", namePh:"E.g. Sarah", color:"Color",
-    zero:"↺ Score to 0", remove:"✕ Remove", cancel:"Cancel", save:"Save",
+    zero:"Score to 0", remove:"Remove", cancel:"Cancel", save:"Save",
     confirmRemove:"Remove this player from the game?",
     confirmReset:"Reset all scores to zero?", maxAlert:"Maximum of 6 players!",
     minusA:"Remove points", plusA:"Add points",
@@ -386,12 +427,14 @@ const I18N = {
   it: {
     title:"Segnapunti", step:"Passo dei punti",
     empty:"Nessun giocatore per ora.<br>Tocca «Aggiungi un giocatore» per iniziare la partita.",
-    add:"+ Aggiungi un giocatore", reset:"Azzera i punteggi",
+    add:"Aggiungi un giocatore", reset:"Azzera i punteggi",
+    game:"Nome del gioco", goal:"Punti per vincere", goalPh:"Nessuno",
+    winFmt:"🏆 {n} vince la partita!",
     settings:"Impostazioni", defaultStep:"Passo predefinito", lang:"Lingua",
     maxNote:"Fino a 6 giocatori", close:"Chiudi",
     newPlayer:"Nuovo giocatore", playerSettings:"Impostazioni giocatore",
     name:"Nome del giocatore", namePh:"Es.: Chiara", color:"Colore",
-    zero:"↺ Punteggio a 0", remove:"✕ Rimuovi", cancel:"Annulla", save:"Salva",
+    zero:"Punteggio a 0", remove:"Rimuovi", cancel:"Annulla", save:"Salva",
     confirmRemove:"Rimuovere questo giocatore dalla partita?",
     confirmReset:"Azzerare tutti i punteggi?", maxAlert:"Massimo 6 giocatori!",
     minusA:"Togli punti", plusA:"Aggiungi punti",
@@ -400,12 +443,14 @@ const I18N = {
   es: {
     title:"Contador de puntos", step:"Salto de puntos",
     empty:"Aún no hay jugadores.<br>Toca «Añadir un jugador» para empezar la partida.",
-    add:"+ Añadir un jugador", reset:"Reiniciar puntos",
+    add:"Añadir un jugador", reset:"Reiniciar puntos",
+    game:"Nombre del juego", goal:"Puntos para ganar", goalPh:"Ninguno",
+    winFmt:"🏆 ¡{n} gana la partida!",
     settings:"Ajustes", defaultStep:"Salto predeterminado", lang:"Idioma",
     maxNote:"Hasta 6 jugadores", close:"Cerrar",
     newPlayer:"Nuevo jugador", playerSettings:"Ajustes del jugador",
     name:"Nombre del jugador", namePh:"Ej.: Carmen", color:"Color",
-    zero:"↺ Puntos a 0", remove:"✕ Quitar", cancel:"Cancelar", save:"Guardar",
+    zero:"Puntos a 0", remove:"Quitar", cancel:"Cancelar", save:"Guardar",
     confirmRemove:"¿Quitar a este jugador de la partida?",
     confirmReset:"¿Poner todos los puntos a cero?", maxAlert:"¡Máximo 6 jugadores!",
     minusA:"Quitar puntos", plusA:"Sumar puntos",
@@ -454,6 +499,52 @@ document.getElementById('settingsBtn').onclick = () => settingsOverlay.classList
 document.getElementById('settingsClose').onclick = () => settingsOverlay.classList.remove('open');
 settingsOverlay.onclick = e => { if(e.target === settingsOverlay) settingsOverlay.classList.remove('open'); };
 
+// --- Nom du jeu et points pour gagner ---
+const gameInput = document.getElementById('gameInput');
+const goalInput = document.getElementById('goalInput');
+const gameSub = document.getElementById('gameSub');
+let gameName = localStorage.getItem('cc-game') || '';
+let goal = parseInt(localStorage.getItem('cc-goal'), 10);
+if(isNaN(goal) || goal < 1) goal = 0; // 0 = pas de limite
+gameInput.value = gameName;
+goalInput.value = goal || '';
+function updateGameSub(){
+  gameSub.textContent = gameName;
+  gameSub.style.display = gameName ? 'block' : 'none';
+}
+gameInput.oninput = () => {
+  gameName = gameInput.value.trim();
+  localStorage.setItem('cc-game', gameName);
+  updateGameSub();
+};
+goalInput.oninput = () => {
+  const v = parseInt(goalInput.value, 10);
+  goal = (isNaN(v) || v < 1) ? 0 : v;
+  localStorage.setItem('cc-goal', goal || '');
+  render();
+};
+updateGameSub();
+
+// --- Célébration de victoire ---
+function celebrate(name){
+  const c = document.createElement('div');
+  c.className = 'confetti';
+  for(let i = 0; i < 40; i++){
+    const s = document.createElement('span');
+    s.style.left = Math.random() * 100 + '%';
+    s.style.background = i % 5 === 0 ? 'var(--gold)' : COLORS[i % COLORS.length];
+    s.style.animationDelay = (Math.random() * .5) + 's';
+    s.style.animationDuration = (2 + Math.random()) + 's';
+    c.appendChild(s);
+  }
+  const b = document.createElement('div');
+  b.className = 'win-banner';
+  b.textContent = L.winFmt.replace('{n}', name);
+  c.appendChild(b);
+  document.body.appendChild(c);
+  setTimeout(() => c.remove(), 3200);
+}
+
 // --- Langue ---
 function applyLang(){
   L = I18N[lang];
@@ -462,20 +553,23 @@ function applyLang(){
   document.getElementById('tTitle').textContent = L.title;
   document.getElementById('tStep').textContent = L.step;
   document.getElementById('emptyText').innerHTML = L.empty;
-  document.getElementById('addBtn').textContent = L.add;
-  document.getElementById('resetBtn').textContent = L.reset;
+  document.getElementById('addBtn').innerHTML = '<span class="ico">+</span>' + L.add;
+  document.getElementById('resetBtn').innerHTML = '<span class="ico">↺</span>' + L.reset;
   document.getElementById('tSettings').textContent = L.settings;
+  document.getElementById('tGame').textContent = L.game;
+  document.getElementById('tGoal').textContent = L.goal;
+  document.getElementById('goalInput').placeholder = L.goalPh;
   document.getElementById('tDefaultStep').textContent = L.defaultStep;
   document.getElementById('tLang').textContent = L.lang;
   document.getElementById('maxNote').textContent = L.maxNote;
-  document.getElementById('settingsClose').textContent = L.close;
+  document.getElementById('settingsClose').innerHTML = '<span class="ico">✓</span>' + L.close;
   document.getElementById('tName').textContent = L.name;
   nameInput.placeholder = L.namePh;
   document.getElementById('tColor').textContent = L.color;
-  document.getElementById('zeroBtn').textContent = L.zero;
-  document.getElementById('deleteBtn').textContent = L.remove;
-  document.getElementById('cancelBtn').textContent = L.cancel;
-  document.getElementById('saveBtn').textContent = L.save;
+  document.getElementById('zeroBtn').innerHTML = '<span class="ico">↺</span>' + L.zero;
+  document.getElementById('deleteBtn').innerHTML = '<span class="ico">✕</span>' + L.remove;
+  document.getElementById('cancelBtn').innerHTML = '<span class="ico">↩</span>' + L.cancel;
+  document.getElementById('saveBtn').innerHTML = '<span class="ico">✓</span>' + L.save;
   customStep.setAttribute('aria-label', L.customA);
   localStorage.setItem('cc-lang', lang);
   render();
@@ -560,13 +654,14 @@ function render(popIndex){
   empty.style.display = players.length ? 'none' : 'block';
   players.forEach((p, i) => {
     const row = document.createElement('div');
-    row.className = 'row';
+    const isWinner = goal > 0 && p.score >= goal;
+    row.className = 'row' + (isWinner ? ' winner' : '');
     row.style.setProperty('--c', p.color);
     if(popIndex !== undefined) row.style.animation = 'none'; // pas de ré-entrée à chaque point
     row.innerHTML = `
       <div class="row-top">
         <button class="who" aria-label="${L.gearA} ${escapeHtml(p.name)}">
-          <span class="pip">${PIPS[i]}</span><span class="name">${escapeHtml(p.name)}</span>
+          <span class="pip">${PIPS[i]}</span>${isWinner ? '<span class="crown">♛</span>' : ''}<span class="name">${escapeHtml(p.name)}</span>
         </button>
         <button class="gear-btn" aria-label="${L.gearA} ${escapeHtml(p.name)}">⚙</button>
       </div>
@@ -587,7 +682,12 @@ function render(popIndex){
       return (isNaN(v) ? step : Math.abs(v));
     };
     row.querySelector('.minus').onclick = () => { p.score -= getAmount(); render(i); };
-    row.querySelector('.plus').onclick  = () => { p.score += getAmount(); render(i); };
+    row.querySelector('.plus').onclick  = () => {
+      const wasWinner = goal > 0 && p.score >= goal;
+      p.score += getAmount();
+      render(i);
+      if(goal > 0 && !wasWinner && p.score >= goal) celebrate(p.name);
+    };
     row.querySelector('.gear-btn').onclick = () => openSheet(i);
     row.querySelector('.who').onclick   = () => openSheet(i);
     list.appendChild(row);
