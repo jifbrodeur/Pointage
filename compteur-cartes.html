@@ -78,6 +78,18 @@
   }
   h1 .pips{color:var(--gold);font-size:1rem;letter-spacing:.1em;}
   .sub{font-size:.75rem;color:var(--dim);margin-top:1px;}
+  .settings-btn{
+    width:42px;height:42px;border-radius:12px;flex-shrink:0;cursor:pointer;
+    border:1px solid var(--line);background:var(--surface-2);color:var(--text);
+    font-size:1.3rem;display:flex;align-items:center;justify-content:center;
+    transition:transform .15s;
+  }
+  .settings-btn:active{transform:scale(.9) rotate(40deg);}
+  .set-row{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    margin-bottom:20px;
+  }
+  .set-row .set-label{font-size:.95rem;font-weight:600;color:var(--text);}
   .switch{
     position:relative;width:66px;height:34px;border-radius:999px;flex-shrink:0;
     border:1px solid var(--line);background:var(--field);cursor:pointer;
@@ -275,10 +287,7 @@
       <h1><span class="pips">♠♥</span> Compteur de cartes</h1>
       <div class="sub">Jusqu'à 6 joueurs</div>
     </div>
-    <button class="switch" id="themeBtn" role="switch" aria-checked="true" aria-label="Mode sombre">
-      <span class="sw-icon">☀</span><span class="sw-icon">☾</span>
-      <span class="knob" id="knob">☾</span>
-    </button>
+    <button class="settings-btn" id="settingsBtn" aria-label="Paramètres de l'application">⚙</button>
   </header>
 
   <div class="step-wrap">
@@ -297,6 +306,25 @@
   <div class="inner">
     <button class="btn primary" id="addBtn">+ Ajouter un joueur</button>
     <button class="btn" id="resetBtn">Remise à zéro</button>
+  </div>
+</div>
+
+<!-- Feuille paramètres de l'application -->
+<div class="overlay" id="settingsOverlay">
+  <div class="sheet">
+    <h2>Paramètres</h2>
+    <div class="set-row">
+      <span class="set-label">Thème clair / sombre</span>
+      <button class="switch" id="themeBtn" role="switch" aria-checked="true" aria-label="Mode sombre">
+        <span class="sw-icon">☀</span><span class="sw-icon">☾</span>
+        <span class="knob" id="knob">☾</span>
+      </button>
+    </div>
+    <label>Bond par défaut</label>
+    <div class="step-bar" id="defaultStepBar"></div>
+    <div class="sheet-actions" style="margin-top:22px">
+      <button class="btn primary" id="settingsClose">Fermer</button>
+    </div>
   </div>
 </div>
 
@@ -325,7 +353,9 @@ const STEPS = [1,5,10,25,50,100];
 const PIPS = ['♠','♥','♦','♣','♠','♥'];
 
 let players = [];      // {name, color, score}
-let step = 10;
+let defaultStep = parseInt(localStorage.getItem('cc-step'), 10);
+if(isNaN(defaultStep) || !STEPS.includes(defaultStep)) defaultStep = 10;
+let step = defaultStep;
 let editIndex = null;  // null = ajout
 let selColor = COLORS[0];
 
@@ -349,6 +379,30 @@ function applyTheme(){
 }
 themeBtn.onclick = () => { theme = theme === 'dark' ? 'light' : 'dark'; applyTheme(); };
 applyTheme();
+
+// --- Paramètres de l'application ---
+const settingsOverlay = document.getElementById('settingsOverlay');
+document.getElementById('settingsBtn').onclick = () => settingsOverlay.classList.add('open');
+document.getElementById('settingsClose').onclick = () => settingsOverlay.classList.remove('open');
+settingsOverlay.onclick = e => { if(e.target === settingsOverlay) settingsOverlay.classList.remove('open'); };
+
+const defaultStepBar = document.getElementById('defaultStepBar');
+STEPS.forEach(s => {
+  const b = document.createElement('button');
+  b.className = 'chip' + (s === defaultStep ? ' on' : '');
+  b.textContent = s;
+  b.onclick = () => {
+    defaultStep = s;
+    localStorage.setItem('cc-step', s);
+    defaultStepBar.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', +c.textContent === s));
+    // s'applique aussi immédiatement comme bond courant
+    step = s;
+    customStep.value = '';
+    refreshChips();
+    render();
+  };
+  defaultStepBar.appendChild(b);
+});
 
 // --- Bonds prédéfinis + bond personnalisé ---
 STEPS.forEach(s => {
