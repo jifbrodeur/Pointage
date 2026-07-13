@@ -150,7 +150,14 @@
   }
   .who .pip{color:var(--c);font-size:.9rem;}
   .who .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .who .gear{font-size:.85rem;opacity:.55;}
+  .gear-btn{
+    width:42px;height:42px;border-radius:12px;flex-shrink:0;align-self:center;
+    border:1px solid var(--line);background:var(--surface-2);color:var(--dim);
+    font-size:1.25rem;cursor:pointer;position:relative;z-index:1;
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .15s;
+  }
+  .gear-btn:active{transform:scale(.9) rotate(40deg);}
   .score{
     font-family:'Bricolage Grotesque',sans-serif;font-weight:800;
     font-size:2.1rem;line-height:1.05;letter-spacing:-.02em;
@@ -160,16 +167,26 @@
   .score.pop{animation:pop .3s cubic-bezier(.2,.8,.3,1);}
   @keyframes pop{40%{transform:scale(1.14);}}
 
-  .ctrl{display:flex;align-items:center;gap:8px;flex-shrink:0;position:relative;z-index:1;}
+  .ctrl{display:flex;align-items:center;gap:6px;flex-shrink:0;position:relative;z-index:1;}
   .ctrl button{
-    width:56px;height:56px;border-radius:15px;border:1px solid var(--line);
-    background:var(--surface-2);font-size:1.6rem;font-weight:700;cursor:pointer;
+    width:48px;height:52px;border-radius:14px;border:1px solid var(--line);
+    background:var(--surface-2);font-size:1.5rem;font-weight:700;cursor:pointer;
     font-family:'Outfit',sans-serif;transition:transform .1s,background .15s;
     display:flex;align-items:center;justify-content:center;
   }
   .ctrl button:active{transform:scale(.92);}
   .ctrl .minus{color:var(--red);}
   .ctrl .plus{color:var(--green);}
+  .ctrl .amount{
+    width:52px;height:52px;border-radius:14px;border:1px solid var(--line);
+    background:var(--field);color:var(--text);text-align:center;
+    font-family:'Outfit',sans-serif;font-weight:600;font-size:1rem;
+    -moz-appearance:textfield;appearance:textfield;
+  }
+  .ctrl .amount::-webkit-outer-spin-button,
+  .ctrl .amount::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  .ctrl .amount::placeholder{color:var(--dim);font-weight:500;}
+  .ctrl .amount:focus{outline:2px solid var(--gold);outline-offset:-1px;}
 
   .empty{
     text-align:center;color:var(--dim);font-size:.95rem;padding:44px 20px;
@@ -372,15 +389,26 @@ function render(popIndex){
     if(popIndex !== undefined) row.style.animation = 'none'; // pas de ré-entrée à chaque point
     row.innerHTML = `
       <button class="who" aria-label="Paramètres de ${escapeHtml(p.name)}">
-        <span class="meta"><span class="pip">${PIPS[i]}</span><span class="name">${escapeHtml(p.name)}</span><span class="gear">⚙</span></span>
+        <span class="meta"><span class="pip">${PIPS[i]}</span><span class="name">${escapeHtml(p.name)}</span></span>
         <span class="score ${p.score < 0 ? 'neg' : ''}${i === popIndex ? ' pop' : ''}">${p.score}</span>
       </button>
+      <button class="gear-btn" aria-label="Paramètres de ${escapeHtml(p.name)}">⚙</button>
       <div class="ctrl">
-        <button class="minus" aria-label="Enlever ${step} points">−</button>
-        <button class="plus" aria-label="Ajouter ${step} points">+</button>
+        <button class="minus" aria-label="Enlever des points">−</button>
+        <input class="amount" type="number" inputmode="numeric" pattern="[0-9]*"
+               placeholder="${step}" aria-label="Montant personnalisé">
+        <button class="plus" aria-label="Ajouter des points">+</button>
       </div>`;
-    row.querySelector('.minus').onclick = () => { p.score -= step; render(i); };
-    row.querySelector('.plus').onclick  = () => { p.score += step; render(i); };
+    const amountInput = row.querySelector('.amount');
+    amountInput.value = p.amt || '';
+    amountInput.oninput = () => { p.amt = amountInput.value; }; // conservé entre les rendus
+    const getAmount = () => {
+      const v = parseInt(amountInput.value, 10);
+      return (isNaN(v) ? step : Math.abs(v));
+    };
+    row.querySelector('.minus').onclick = () => { p.score -= getAmount(); render(i); };
+    row.querySelector('.plus').onclick  = () => { p.score += getAmount(); render(i); };
+    row.querySelector('.gear-btn').onclick = () => openSheet(i);
     row.querySelector('.who').onclick   = () => openSheet(i);
     list.appendChild(row);
   });
