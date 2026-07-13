@@ -6,6 +6,10 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0A100C" id="themeColor">
+<meta name="apple-mobile-web-app-title" content="Compteur">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="manifest" href="manifest.json">
 <title>Compteur de cartes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -74,13 +78,20 @@
   }
   h1 .pips{color:var(--gold);font-size:1rem;letter-spacing:.1em;}
   .sub{font-size:.75rem;color:var(--dim);margin-top:1px;}
-  .theme-btn{
-    width:42px;height:42px;border-radius:50%;flex-shrink:0;cursor:pointer;
-    border:1px solid var(--line);background:var(--surface-2);color:var(--text);
-    font-size:1.15rem;display:flex;align-items:center;justify-content:center;
-    transition:transform .15s;
+  .switch{
+    position:relative;width:66px;height:34px;border-radius:999px;flex-shrink:0;
+    border:1px solid var(--line);background:var(--field);cursor:pointer;
+    display:flex;align-items:center;justify-content:space-between;padding:0 9px;
   }
-  .theme-btn:active{transform:scale(.9) rotate(30deg);}
+  .switch .sw-icon{font-size:.8rem;color:var(--dim);line-height:1;}
+  .switch .knob{
+    position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;
+    background:var(--gold);box-shadow:0 2px 8px rgba(0,0,0,.35);
+    display:flex;align-items:center;justify-content:center;
+    font-size:.78rem;color:var(--on-gold);
+    transition:transform .25s cubic-bezier(.2,.8,.3,1);
+  }
+  [data-theme="dark"] .switch .knob{transform:translateX(32px);}
 
   /* Sélecteur de bond */
   .step-wrap{margin-bottom:16px;}
@@ -264,7 +275,10 @@
       <h1><span class="pips">♠♥</span> Compteur de cartes</h1>
       <div class="sub">Jusqu'à 6 joueurs</div>
     </div>
-    <button class="theme-btn" id="themeBtn" aria-label="Changer de thème">☀</button>
+    <button class="switch" id="themeBtn" role="switch" aria-checked="true" aria-label="Mode sombre">
+      <span class="sw-icon">☀</span><span class="sw-icon">☾</span>
+      <span class="knob" id="knob">☾</span>
+    </button>
   </header>
 
   <div class="step-wrap">
@@ -328,7 +342,8 @@ const themeBtn = document.getElementById('themeBtn');
 let theme = localStorage.getItem('cc-theme') || 'dark';
 function applyTheme(){
   document.documentElement.dataset.theme = theme;
-  themeBtn.textContent = theme === 'dark' ? '☀' : '☾';
+  themeBtn.setAttribute('aria-checked', theme === 'dark');
+  document.getElementById('knob').textContent = theme === 'dark' ? '☾' : '☀';
   document.getElementById('themeColor').content = theme === 'dark' ? '#0A100C' : '#F5F2E9';
   localStorage.setItem('cc-theme', theme);
 }
