@@ -115,7 +115,7 @@
     background-color:var(--bg);
     color:var(--text);
     min-height:100vh;
-    padding:max(18px, env(safe-area-inset-top)) 16px calc(110px + env(safe-area-inset-bottom));
+    padding:max(14px, env(safe-area-inset-top)) 16px calc(76px + env(safe-area-inset-bottom));
     user-select:none;-webkit-user-select:none;
     transition:background-color .3s,color .3s;
   }
@@ -127,16 +127,18 @@
   main{position:relative;z-index:1;max-width:640px;margin:0 auto;}
 
   header{
-    display:flex;flex-direction:column;gap:10px;margin-bottom:16px;
+    display:flex;flex-direction:column;gap:8px;margin-bottom:12px;
   }
-  .title-wrap{text-align:center;}
   h1{
-    font-family:var(--font-display);font-weight:800;
-    font-size:1.35rem;letter-spacing:-.01em;
+    font-family:var(--font-display);font-weight:800;text-align:center;
+    font-size:1.6rem;letter-spacing:-.01em;
   }
-  h1 .pips{color:var(--gold);font-size:1rem;letter-spacing:.1em;}
-  .sub{font-size:.75rem;color:var(--dim);margin-top:1px;}
-  .head-ctrl{display:flex;align-items:center;gap:10px;align-self:flex-end;}
+  h1 .pips{color:var(--gold);font-size:1.2rem;letter-spacing:.1em;}
+  .sub-line{display:flex;align-items:center;gap:10px;}
+  .sub{
+    flex:1;min-width:0;text-align:center;font-size:.95rem;font-weight:600;
+    color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
   .settings-btn{
     width:42px;height:42px;border-radius:12px;flex-shrink:0;cursor:pointer;
     border:1px solid var(--line);background:var(--surface-2);color:var(--text);
@@ -166,10 +168,10 @@
   [data-theme="dark"] .switch .knob{transform:translateX(38px);}
 
   /* Sélecteur de bond */
-  .step-wrap{margin-bottom:16px;}
+  .step-wrap{margin-bottom:12px;}
   .step-label{
     font-size:.68rem;text-transform:uppercase;letter-spacing:.16em;
-    color:var(--dim);margin-bottom:8px;
+    color:var(--dim);margin-bottom:6px;
   }
   .step-bar{
     display:flex;gap:6px;padding:5px;border-radius:999px;
@@ -200,12 +202,12 @@
   .chip-input.on{border-color:var(--gold);border-style:solid;}
 
   /* Rangées de joueurs — pleine largeur */
-  .list{display:flex;flex-direction:column;gap:10px;}
+  .list{display:flex;flex-direction:column;gap:8px;}
   .row{
-    display:flex;flex-direction:column;gap:10px;
+    display:flex;flex-direction:column;gap:8px;
     background:var(--surface);
     border:1px solid var(--line);
-    border-radius:18px;padding:12px 12px 12px 16px;
+    border-radius:16px;padding:10px 10px 10px 14px;
     position:relative;overflow:hidden;
     animation:enter .35s cubic-bezier(.2,.8,.3,1) both;
   }
@@ -243,7 +245,7 @@
   .gear-btn:active{transform:scale(.9) rotate(40deg);}
   .score{
     font-family:var(--font-display);font-weight:800;
-    font-size:2.1rem;line-height:1.05;letter-spacing:-.02em;
+    font-size:1.9rem;line-height:1.05;letter-spacing:-.02em;
     font-variant-numeric:tabular-nums;
   }
   .score.neg{color:var(--red);}
@@ -281,7 +283,7 @@
   .actions{
     position:fixed;left:0;right:0;bottom:0;z-index:5;
     display:flex;gap:10px;justify-content:center;
-    padding:14px 16px calc(14px + env(safe-area-inset-bottom));
+    padding:8px 16px calc(8px + env(safe-area-inset-bottom));
     background:var(--bar);
     backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
     border-top:1px solid var(--line);
@@ -289,7 +291,7 @@
   .actions .inner{display:flex;gap:10px;width:100%;max-width:640px;}
   .btn{
     border:1px solid var(--line);background:var(--surface-2);
-    color:var(--text);border-radius:14px;padding:14px 18px;
+    color:var(--text);border-radius:14px;padding:11px 14px;
     font-family:var(--font-body);font-weight:600;font-size:.95rem;cursor:pointer;
     transition:transform .1s;
     display:flex;align-items:center;justify-content:center;gap:8px;
@@ -373,16 +375,14 @@
 
 <main>
   <header>
-    <div class="head-ctrl">
+    <h1><span class="pips" id="pipL">♠♥</span> <span id="tTitle">Score Keeper</span> <span class="pips" id="pipR">♦♣</span></h1>
+    <div class="sub-line">
       <button class="settings-btn" id="settingsBtn" aria-label="Paramètres de l'application">⚙</button>
+      <div class="sub" id="gameSub"></div>
       <button class="switch" id="themeBtn" role="switch" aria-checked="true" aria-label="Mode sombre">
         <span class="sw-icon">☀</span><span class="sw-icon">☾</span>
         <span class="knob" id="knob">☾</span>
       </button>
-    </div>
-    <div class="title-wrap">
-      <h1><span class="pips" id="pipL">♠♥</span> <span id="tTitle">Score Keeper</span> <span class="pips" id="pipR">♦♣</span></h1>
-      <div class="sub" id="gameSub" style="display:none"></div>
     </div>
   </header>
 
@@ -394,7 +394,7 @@
   <div class="list" id="list"></div>
   <div class="empty" id="empty">
     <span class="pips">♠ ♥ ♦ ♣</span>
-    <span id="emptyText">Aucun joueur pour l'instant.<br>Touche « Ajouter un joueur » pour commencer la partie.</span>
+    <span id="emptyText">Aucun joueur pour l'instant.<br>Touche « + Joueur » pour commencer la partie.</span>
   </div>
 </main>
 
@@ -456,8 +456,8 @@ const PIPS = ['♠','♥','♦','♣','♠','♥'];
 const I18N = {
   fr: {
     title:"Score Keeper", step:"Bond de points",
-    empty:"Aucun joueur pour l'instant.<br>Touche « Ajouter un joueur » pour commencer la partie.",
-    add:"Ajouter un joueur", reset:"Remise à zéro",
+    empty:"Aucun joueur pour l'instant.<br>Touche « + Joueur » pour commencer la partie.",
+    add:"Joueur", reset:"Remise à zéro",
     game:"Nom du jeu", goal:"Points pour gagner", goalPh:"Aucun",
     winFmt:"🏆 {n} gagne la partie!",
     skinLabel:"Style", skins:{sobre:"Sobre",modern:"Moderne",retro:"Années 80",mono:"Mono"},
@@ -474,8 +474,8 @@ const I18N = {
   },
   en: {
     title:"Score Keeper", step:"Point step",
-    empty:"No players yet.<br>Tap “Add a player” to start the game.",
-    add:"Add a player", reset:"Reset scores",
+    empty:"No players yet.<br>Tap “+ Player” to start the game.",
+    add:"Player", reset:"Reset scores",
     game:"Game name", goal:"Points to win", goalPh:"None",
     winFmt:"🏆 {n} wins the game!",
     skinLabel:"Style", skins:{sobre:"Classic",modern:"Modern",retro:"80s",mono:"Mono"},
@@ -492,8 +492,8 @@ const I18N = {
   },
   it: {
     title:"Score Keeper", step:"Passo dei punti",
-    empty:"Nessun giocatore per ora.<br>Tocca «Aggiungi un giocatore» per iniziare la partita.",
-    add:"Aggiungi un giocatore", reset:"Azzera i punteggi",
+    empty:"Nessun giocatore per ora.<br>Tocca «+ Giocatore» per iniziare la partita.",
+    add:"Giocatore", reset:"Azzera i punteggi",
     game:"Nome del gioco", goal:"Punti per vincere", goalPh:"Nessuno",
     winFmt:"🏆 {n} vince la partita!",
     skinLabel:"Stile", skins:{sobre:"Sobrio",modern:"Moderno",retro:"Anni 80",mono:"Mono"},
@@ -510,8 +510,8 @@ const I18N = {
   },
   es: {
     title:"Score Keeper", step:"Salto de puntos",
-    empty:"Aún no hay jugadores.<br>Toca «Añadir un jugador» para empezar la partida.",
-    add:"Añadir un jugador", reset:"Reiniciar puntos",
+    empty:"Aún no hay jugadores.<br>Toca «+ Jugador» para empezar la partida.",
+    add:"Jugador", reset:"Reiniciar puntos",
     game:"Nombre del juego", goal:"Puntos para ganar", goalPh:"Ninguno",
     winFmt:"🏆 ¡{n} gana la partida!",
     skinLabel:"Estilo", skins:{sobre:"Sobrio",modern:"Moderno",retro:"Años 80",mono:"Mono"},
@@ -586,7 +586,6 @@ gameInput.value = gameName;
 goalInput.value = goal || '';
 function updateGameSub(){
   gameSub.textContent = gameName;
-  gameSub.style.display = gameName ? 'block' : 'none';
 }
 gameInput.oninput = () => {
   gameName = gameInput.value.trim();
