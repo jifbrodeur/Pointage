@@ -6,11 +6,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0A100C" id="themeColor">
-<meta name="apple-mobile-web-app-title" content="Compteur">
+<meta name="apple-mobile-web-app-title" content="Score Keeper">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 <link rel="manifest" href="manifest.json">
-<title>Compteur de cartes</title>
+<title>Score Keeper</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -316,7 +316,7 @@
 <main>
   <header>
     <div>
-      <h1><span class="pips">♠♥</span> <span id="tTitle">Compteur de cartes</span></h1>
+      <h1><span class="pips">♠♥</span> <span id="tTitle">Score Keeper</span></h1>
       <div class="sub" id="gameSub" style="display:none"></div>
     </div>
     <div class="head-ctrl">
@@ -393,7 +393,7 @@ const PIPS = ['♠','♥','♦','♣','♠','♥'];
 // --- Traductions ---
 const I18N = {
   fr: {
-    title:"Compteur de cartes", step:"Bond de points",
+    title:"Score Keeper", step:"Bond de points",
     empty:"Aucun joueur pour l'instant.<br>Touche « Ajouter un joueur » pour commencer la partie.",
     add:"Ajouter un joueur", reset:"Remise à zéro",
     game:"Nom du jeu", goal:"Points pour gagner", goalPh:"Aucun",
@@ -409,7 +409,7 @@ const I18N = {
     amountA:"Montant personnalisé", customA:"Bond personnalisé", gearA:"Paramètres de"
   },
   en: {
-    title:"Card Score Counter", step:"Point step",
+    title:"Score Keeper", step:"Point step",
     empty:"No players yet.<br>Tap “Add a player” to start the game.",
     add:"Add a player", reset:"Reset scores",
     game:"Game name", goal:"Points to win", goalPh:"None",
@@ -425,7 +425,7 @@ const I18N = {
     amountA:"Custom amount", customA:"Custom step", gearA:"Settings for"
   },
   it: {
-    title:"Segnapunti", step:"Passo dei punti",
+    title:"Score Keeper", step:"Passo dei punti",
     empty:"Nessun giocatore per ora.<br>Tocca «Aggiungi un giocatore» per iniziare la partita.",
     add:"Aggiungi un giocatore", reset:"Azzera i punteggi",
     game:"Nome del gioco", goal:"Punti per vincere", goalPh:"Nessuno",
@@ -441,7 +441,7 @@ const I18N = {
     amountA:"Importo personalizzato", customA:"Passo personalizzato", gearA:"Impostazioni di"
   },
   es: {
-    title:"Contador de puntos", step:"Salto de puntos",
+    title:"Score Keeper", step:"Salto de puntos",
     empty:"Aún no hay jugadores.<br>Toca «Añadir un jugador» para empezar la partida.",
     add:"Añadir un jugador", reset:"Reiniciar puntos",
     game:"Nombre del juego", goal:"Puntos para ganar", goalPh:"Ninguno",

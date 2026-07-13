@@ -1,6 +1,6 @@
 {
-  "name": "Compteur de cartes",
-  "short_name": "Compteur",
+  "name": "Score Keeper",
+  "short_name": "Score Keeper",
   "start_url": "./compteur-cartes.html",
   "display": "standalone",
   "background_color": "#0A100C",
