@@ -91,6 +91,7 @@
     margin-bottom:20px;
   }
   .set-row .set-label{font-size:.95rem;font-weight:600;color:var(--text);}
+  .set-note{font-size:.8rem;color:var(--dim);text-align:center;margin-top:16px;}
   .switch{
     position:relative;width:66px;height:34px;border-radius:999px;flex-shrink:0;
     border:1px solid var(--line);background:var(--field);cursor:pointer;
@@ -284,10 +285,7 @@
 
 <main>
   <header>
-    <div>
-      <h1><span class="pips">♠♥</span> Compteur de cartes</h1>
-      <div class="sub">Jusqu'à 6 joueurs</div>
-    </div>
+    <h1><span class="pips">♠♥</span> <span id="tTitle">Compteur de cartes</span></h1>
     <div class="head-ctrl">
       <button class="settings-btn" id="settingsBtn" aria-label="Paramètres de l'application">⚙</button>
       <button class="switch" id="themeBtn" role="switch" aria-checked="true" aria-label="Mode sombre">
@@ -298,14 +296,14 @@
   </header>
 
   <div class="step-wrap">
-    <div class="step-label">Bond de points</div>
+    <div class="step-label" id="tStep">Bond de points</div>
     <div class="step-bar" id="stepBar"></div>
   </div>
 
   <div class="list" id="list"></div>
   <div class="empty" id="empty">
     <span class="pips">♠ ♥ ♦ ♣</span>
-    Aucun joueur pour l'instant.<br>Touche « Ajouter un joueur » pour commencer la partie.
+    <span id="emptyText">Aucun joueur pour l'instant.<br>Touche « Ajouter un joueur » pour commencer la partie.</span>
   </div>
 </main>
 
@@ -319,10 +317,13 @@
 <!-- Feuille paramètres de l'application -->
 <div class="overlay" id="settingsOverlay">
   <div class="sheet">
-    <h2>Paramètres</h2>
-    <label>Bond par défaut</label>
-    <div class="step-bar" id="defaultStepBar"></div>
-    <div class="sheet-actions" style="margin-top:22px">
+    <h2 id="tSettings">Paramètres</h2>
+    <label id="tDefaultStep">Bond par défaut</label>
+    <div class="step-bar" id="defaultStepBar" style="margin-bottom:18px"></div>
+    <label id="tLang">Langue</label>
+    <div class="step-bar" id="langBar"></div>
+    <div class="set-note" id="maxNote">Jusqu'à 6 joueurs</div>
+    <div class="sheet-actions" style="margin-top:20px">
       <button class="btn primary" id="settingsClose">Fermer</button>
     </div>
   </div>
@@ -332,9 +333,9 @@
 <div class="overlay" id="overlay">
   <div class="sheet">
     <h2 id="sheetTitle">Nouveau joueur</h2>
-    <label for="nameInput">Nom du joueur</label>
+    <label for="nameInput" id="tName">Nom du joueur</label>
     <input type="text" id="nameInput" maxlength="14" placeholder="Ex. : Chantal" autocomplete="off">
-    <label>Couleur</label>
+    <label id="tColor">Couleur</label>
     <div class="swatches" id="swatches"></div>
     <div class="sheet-tools" id="sheetTools">
       <button class="btn zero" id="zeroBtn">↺ Score à 0</button>
@@ -351,6 +352,73 @@
 const COLORS = ['#FF4B38','#2E9BFF','#FFB300','#B14BFF','#00E6A0','#FF4D9D','#7FE62E','#00CFE8'];
 const STEPS = [1,5,10,25,50,100];
 const PIPS = ['♠','♥','♦','♣','♠','♥'];
+
+// --- Traductions ---
+const I18N = {
+  fr: {
+    title:"Compteur de cartes", step:"Bond de points",
+    empty:"Aucun joueur pour l'instant.<br>Touche « Ajouter un joueur » pour commencer la partie.",
+    add:"+ Ajouter un joueur", reset:"Remise à zéro",
+    settings:"Paramètres", defaultStep:"Bond par défaut", lang:"Langue",
+    maxNote:"Jusqu'à 6 joueurs", close:"Fermer",
+    newPlayer:"Nouveau joueur", playerSettings:"Paramètres du joueur",
+    name:"Nom du joueur", namePh:"Ex. : Chantal", color:"Couleur",
+    zero:"↺ Score à 0", remove:"✕ Retirer", cancel:"Annuler", save:"Enregistrer",
+    confirmRemove:"Retirer ce joueur de la partie?",
+    confirmReset:"Remettre tous les scores à zéro?", maxAlert:"Maximum de 6 joueurs!",
+    minusA:"Enlever des points", plusA:"Ajouter des points",
+    amountA:"Montant personnalisé", customA:"Bond personnalisé", gearA:"Paramètres de"
+  },
+  en: {
+    title:"Card Score Counter", step:"Point step",
+    empty:"No players yet.<br>Tap “Add a player” to start the game.",
+    add:"+ Add a player", reset:"Reset scores",
+    settings:"Settings", defaultStep:"Default step", lang:"Language",
+    maxNote:"Up to 6 players", close:"Close",
+    newPlayer:"New player", playerSettings:"Player settings",
+    name:"Player name", namePh:"E.g. Sarah", color:"Color",
+    zero:"↺ Score to 0", remove:"✕ Remove", cancel:"Cancel", save:"Save",
+    confirmRemove:"Remove this player from the game?",
+    confirmReset:"Reset all scores to zero?", maxAlert:"Maximum of 6 players!",
+    minusA:"Remove points", plusA:"Add points",
+    amountA:"Custom amount", customA:"Custom step", gearA:"Settings for"
+  },
+  it: {
+    title:"Segnapunti", step:"Passo dei punti",
+    empty:"Nessun giocatore per ora.<br>Tocca «Aggiungi un giocatore» per iniziare la partita.",
+    add:"+ Aggiungi un giocatore", reset:"Azzera i punteggi",
+    settings:"Impostazioni", defaultStep:"Passo predefinito", lang:"Lingua",
+    maxNote:"Fino a 6 giocatori", close:"Chiudi",
+    newPlayer:"Nuovo giocatore", playerSettings:"Impostazioni giocatore",
+    name:"Nome del giocatore", namePh:"Es.: Chiara", color:"Colore",
+    zero:"↺ Punteggio a 0", remove:"✕ Rimuovi", cancel:"Annulla", save:"Salva",
+    confirmRemove:"Rimuovere questo giocatore dalla partita?",
+    confirmReset:"Azzerare tutti i punteggi?", maxAlert:"Massimo 6 giocatori!",
+    minusA:"Togli punti", plusA:"Aggiungi punti",
+    amountA:"Importo personalizzato", customA:"Passo personalizzato", gearA:"Impostazioni di"
+  },
+  es: {
+    title:"Contador de puntos", step:"Salto de puntos",
+    empty:"Aún no hay jugadores.<br>Toca «Añadir un jugador» para empezar la partida.",
+    add:"+ Añadir un jugador", reset:"Reiniciar puntos",
+    settings:"Ajustes", defaultStep:"Salto predeterminado", lang:"Idioma",
+    maxNote:"Hasta 6 jugadores", close:"Cerrar",
+    newPlayer:"Nuevo jugador", playerSettings:"Ajustes del jugador",
+    name:"Nombre del jugador", namePh:"Ej.: Carmen", color:"Color",
+    zero:"↺ Puntos a 0", remove:"✕ Quitar", cancel:"Cancelar", save:"Guardar",
+    confirmRemove:"¿Quitar a este jugador de la partida?",
+    confirmReset:"¿Poner todos los puntos a cero?", maxAlert:"¡Máximo 6 jugadores!",
+    minusA:"Quitar puntos", plusA:"Sumar puntos",
+    amountA:"Cantidad personalizada", customA:"Salto personalizado", gearA:"Ajustes de"
+  }
+};
+const LANGS = ['fr','en','it','es'];
+let lang = localStorage.getItem('cc-lang');
+if(!LANGS.includes(lang)){
+  const nav = (navigator.language || 'fr').slice(0,2);
+  lang = LANGS.includes(nav) ? nav : 'en';
+}
+let L = I18N[lang];
 
 let players = [];      // {name, color, score}
 let defaultStep = parseInt(localStorage.getItem('cc-step'), 10);
@@ -385,6 +453,45 @@ const settingsOverlay = document.getElementById('settingsOverlay');
 document.getElementById('settingsBtn').onclick = () => settingsOverlay.classList.add('open');
 document.getElementById('settingsClose').onclick = () => settingsOverlay.classList.remove('open');
 settingsOverlay.onclick = e => { if(e.target === settingsOverlay) settingsOverlay.classList.remove('open'); };
+
+// --- Langue ---
+function applyLang(){
+  L = I18N[lang];
+  document.documentElement.lang = lang;
+  document.title = L.title;
+  document.getElementById('tTitle').textContent = L.title;
+  document.getElementById('tStep').textContent = L.step;
+  document.getElementById('emptyText').innerHTML = L.empty;
+  document.getElementById('addBtn').textContent = L.add;
+  document.getElementById('resetBtn').textContent = L.reset;
+  document.getElementById('tSettings').textContent = L.settings;
+  document.getElementById('tDefaultStep').textContent = L.defaultStep;
+  document.getElementById('tLang').textContent = L.lang;
+  document.getElementById('maxNote').textContent = L.maxNote;
+  document.getElementById('settingsClose').textContent = L.close;
+  document.getElementById('tName').textContent = L.name;
+  nameInput.placeholder = L.namePh;
+  document.getElementById('tColor').textContent = L.color;
+  document.getElementById('zeroBtn').textContent = L.zero;
+  document.getElementById('deleteBtn').textContent = L.remove;
+  document.getElementById('cancelBtn').textContent = L.cancel;
+  document.getElementById('saveBtn').textContent = L.save;
+  customStep.setAttribute('aria-label', L.customA);
+  localStorage.setItem('cc-lang', lang);
+  render();
+}
+const langBar = document.getElementById('langBar');
+LANGS.forEach(l => {
+  const b = document.createElement('button');
+  b.className = 'chip' + (l === lang ? ' on' : '');
+  b.textContent = l.toUpperCase();
+  b.onclick = () => {
+    lang = l;
+    langBar.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.textContent === l.toUpperCase()));
+    applyLang();
+  };
+  langBar.appendChild(b);
+});
 
 const defaultStepBar = document.getElementById('defaultStepBar');
 STEPS.forEach(s => {
@@ -458,18 +565,18 @@ function render(popIndex){
     if(popIndex !== undefined) row.style.animation = 'none'; // pas de ré-entrée à chaque point
     row.innerHTML = `
       <div class="row-top">
-        <button class="who" aria-label="Paramètres de ${escapeHtml(p.name)}">
+        <button class="who" aria-label="${L.gearA} ${escapeHtml(p.name)}">
           <span class="pip">${PIPS[i]}</span><span class="name">${escapeHtml(p.name)}</span>
         </button>
-        <button class="gear-btn" aria-label="Paramètres de ${escapeHtml(p.name)}">⚙</button>
+        <button class="gear-btn" aria-label="${L.gearA} ${escapeHtml(p.name)}">⚙</button>
       </div>
       <div class="row-bot">
         <span class="score ${p.score < 0 ? 'neg' : ''}${i === popIndex ? ' pop' : ''}">${p.score}</span>
         <div class="ctrl">
-          <button class="minus" aria-label="Enlever des points">−</button>
+          <button class="minus" aria-label="${L.minusA}">−</button>
           <input class="amount" type="number" inputmode="numeric" pattern="[0-9]*"
-                 placeholder="${step}" aria-label="Montant personnalisé">
-          <button class="plus" aria-label="Ajouter des points">+</button>
+                 placeholder="${step}" aria-label="${L.amountA}">
+          <button class="plus" aria-label="${L.plusA}">+</button>
         </div>
       </div>`;
     const amountInput = row.querySelector('.amount');
@@ -494,7 +601,7 @@ function escapeHtml(s){
 function openSheet(index){
   editIndex = index;
   const isEdit = index !== null;
-  document.getElementById('sheetTitle').textContent = isEdit ? 'Paramètres du joueur' : 'Nouveau joueur';
+  document.getElementById('sheetTitle').textContent = isEdit ? L.playerSettings : L.newPlayer;
   sheetTools.classList.toggle('show', isEdit);
   nameInput.value = isEdit ? players[index].name : '';
   selColor = isEdit ? players[index].color : COLORS[players.length % COLORS.length];
@@ -504,7 +611,7 @@ function openSheet(index){
 }
 
 document.getElementById('addBtn').onclick = () => {
-  if(players.length >= 6){ alert('Maximum de 6 joueurs!'); return; }
+  if(players.length >= 6){ alert(L.maxAlert); return; }
   openSheet(null);
 };
 
@@ -528,7 +635,7 @@ document.getElementById('zeroBtn').onclick = () => {
 };
 
 document.getElementById('deleteBtn').onclick = () => {
-  if(confirm('Retirer ce joueur de la partie?')){
+  if(confirm(L.confirmRemove)){
     players.splice(editIndex, 1);
     overlay.classList.remove('open');
     render();
@@ -539,13 +646,13 @@ document.getElementById('cancelBtn').onclick = () => overlay.classList.remove('o
 overlay.onclick = e => { if(e.target === overlay) overlay.classList.remove('open'); };
 
 document.getElementById('resetBtn').onclick = () => {
-  if(players.length && confirm('Remettre tous les scores à zéro?')){
+  if(players.length && confirm(L.confirmReset)){
     players.forEach(p => p.score = 0);
     render();
   }
 };
 
-render();
+applyLang(); // applique la langue et fait le premier rendu
 </script>
 </body>
 </html>
