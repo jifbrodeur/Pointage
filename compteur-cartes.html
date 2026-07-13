@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0A100C">
+<meta name="theme-color" content="#0A100C" id="themeColor">
 <title>Compteur de cartes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -13,15 +13,36 @@
   :root{
     --bg:#0A100C;
     --glow:#14291D;
-    --surface:rgba(255,255,255,.045);
-    --surface-2:rgba(255,255,255,.08);
-    --line:rgba(255,255,255,.09);
+    --surface:rgba(255,255,255,.05);
+    --surface-2:rgba(255,255,255,.09);
+    --line:rgba(255,255,255,.1);
     --text:#F2F5F0;
     --dim:#8FA096;
-    --gold:#E4B54A;
-    --red:#FF7A6B;
-    --green:#57D9A3;
+    --gold:#F0B93E;
+    --on-gold:#1A1608;
+    --red:#FF6B57;
+    --green:#3BE8A0;
     --sheet:#141B16;
+    --bar:rgba(10,16,12,.75);
+    --field:rgba(0,0,0,.3);
+    --grain:.05;
+  }
+  [data-theme="light"]{
+    --bg:#F5F2E9;
+    --glow:#DCEDDF;
+    --surface:rgba(23,43,30,.05);
+    --surface-2:rgba(23,43,30,.08);
+    --line:rgba(23,43,30,.13);
+    --text:#1D241E;
+    --dim:#68776C;
+    --gold:#E0A21C;
+    --on-gold:#221B05;
+    --red:#DE3A26;
+    --green:#0B9E6B;
+    --sheet:#FDFBF4;
+    --bar:rgba(245,242,233,.8);
+    --field:rgba(23,43,30,.06);
+    --grain:.035;
   }
   *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   html,body{height:100%;}
@@ -34,16 +55,17 @@
     min-height:100vh;
     padding:max(18px, env(safe-area-inset-top)) 16px calc(110px + env(safe-area-inset-bottom));
     user-select:none;-webkit-user-select:none;
+    transition:background-color .3s,color .3s;
   }
   /* grain léger pour la matière */
   body::before{
-    content:'';position:fixed;inset:0;pointer-events:none;opacity:.05;z-index:0;
+    content:'';position:fixed;inset:0;pointer-events:none;opacity:var(--grain);z-index:0;
     background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
   main{position:relative;z-index:1;max-width:640px;margin:0 auto;}
 
   header{
-    display:flex;align-items:baseline;justify-content:space-between;
+    display:flex;align-items:center;justify-content:space-between;
     margin-bottom:18px;gap:10px;
   }
   h1{
@@ -51,7 +73,14 @@
     font-size:1.35rem;letter-spacing:-.01em;
   }
   h1 .pips{color:var(--gold);font-size:1rem;letter-spacing:.1em;}
-  .sub{font-size:.75rem;color:var(--dim);white-space:nowrap;}
+  .sub{font-size:.75rem;color:var(--dim);margin-top:1px;}
+  .theme-btn{
+    width:42px;height:42px;border-radius:50%;flex-shrink:0;cursor:pointer;
+    border:1px solid var(--line);background:var(--surface-2);color:var(--text);
+    font-size:1.15rem;display:flex;align-items:center;justify-content:center;
+    transition:transform .15s;
+  }
+  .theme-btn:active{transform:scale(.9) rotate(30deg);}
 
   /* Sélecteur de bond */
   .step-wrap{margin-bottom:16px;}
@@ -61,21 +90,31 @@
   }
   .step-bar{
     display:flex;gap:6px;padding:5px;border-radius:999px;
-    background:rgba(0,0,0,.35);border:1px solid var(--line);
+    background:var(--field);border:1px solid var(--line);
     overflow-x:auto;scrollbar-width:none;
   }
   .step-bar::-webkit-scrollbar{display:none;}
   .chip{
-    flex:1;min-width:44px;border:none;background:transparent;
+    flex:1;min-width:42px;border:none;background:transparent;
     color:var(--dim);border-radius:999px;padding:9px 0;
     font-family:'Outfit',sans-serif;font-weight:600;font-size:.95rem;cursor:pointer;
     transition:background .15s,color .15s,transform .1s;
   }
   .chip:active{transform:scale(.94);}
   .chip.on{
-    background:var(--gold);color:#1A1608;
-    box-shadow:0 2px 14px rgba(228,181,74,.35);
+    background:var(--gold);color:var(--on-gold);
+    box-shadow:0 2px 14px rgba(240,185,62,.35);
   }
+  .chip-input{
+    flex:1.3;min-width:62px;text-align:center;
+    border:1.5px dashed var(--line);color:var(--text);
+    -moz-appearance:textfield;appearance:textfield;
+  }
+  .chip-input::-webkit-outer-spin-button,
+  .chip-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+  .chip-input::placeholder{color:var(--dim);font-weight:500;}
+  .chip-input:focus{outline:none;border-color:var(--gold);border-style:solid;}
+  .chip-input.on{border-color:var(--gold);border-style:solid;}
 
   /* Rangées de joueurs — pleine largeur */
   .list{display:flex;flex-direction:column;gap:10px;}
@@ -94,15 +133,16 @@
     background:var(--c);border-radius:0 4px 4px 0;
   }
   .row::after{
-    content:'';position:absolute;left:-30px;top:50%;width:120px;height:140%;
+    content:'';position:absolute;left:-30px;top:50%;width:130px;height:150%;
     transform:translateY(-50%);pointer-events:none;
     background:radial-gradient(closest-side, var(--c), transparent 70%);
-    opacity:.14;
+    opacity:.16;
   }
   .who{
     flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;
     gap:2px;padding-left:16px;background:none;border:none;text-align:left;
     color:var(--text);cursor:pointer;font-family:'Outfit',sans-serif;
+    position:relative;z-index:1;
   }
   .who .meta{
     display:flex;align-items:center;gap:6px;font-size:.82rem;
@@ -110,7 +150,7 @@
   }
   .who .pip{color:var(--c);font-size:.9rem;}
   .who .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .who .edit{font-size:.72rem;opacity:.5;}
+  .who .gear{font-size:.85rem;opacity:.55;}
   .score{
     font-family:'Bricolage Grotesque',sans-serif;font-weight:800;
     font-size:2.1rem;line-height:1.05;letter-spacing:-.02em;
@@ -120,26 +160,16 @@
   .score.pop{animation:pop .3s cubic-bezier(.2,.8,.3,1);}
   @keyframes pop{40%{transform:scale(1.14);}}
 
-  .ctrl{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+  .ctrl{display:flex;align-items:center;gap:8px;flex-shrink:0;position:relative;z-index:1;}
   .ctrl button{
-    width:52px;height:52px;border-radius:14px;border:1px solid var(--line);
-    background:var(--surface-2);font-size:1.5rem;font-weight:700;cursor:pointer;
+    width:56px;height:56px;border-radius:15px;border:1px solid var(--line);
+    background:var(--surface-2);font-size:1.6rem;font-weight:700;cursor:pointer;
     font-family:'Outfit',sans-serif;transition:transform .1s,background .15s;
     display:flex;align-items:center;justify-content:center;
   }
   .ctrl button:active{transform:scale(.92);}
   .ctrl .minus{color:var(--red);}
   .ctrl .plus{color:var(--green);}
-  .ctrl .amount{
-    width:54px;height:52px;border-radius:14px;border:1px solid var(--line);
-    background:rgba(0,0,0,.3);color:var(--text);text-align:center;
-    font-family:'Outfit',sans-serif;font-weight:600;font-size:1rem;
-    -moz-appearance:textfield;appearance:textfield;
-  }
-  .ctrl .amount::-webkit-outer-spin-button,
-  .ctrl .amount::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
-  .ctrl .amount::placeholder{color:var(--dim);font-weight:500;}
-  .ctrl .amount:focus{outline:2px solid var(--gold);outline-offset:-1px;}
 
   .empty{
     text-align:center;color:var(--dim);font-size:.95rem;padding:44px 20px;
@@ -152,7 +182,7 @@
     position:fixed;left:0;right:0;bottom:0;z-index:5;
     display:flex;gap:10px;justify-content:center;
     padding:14px 16px calc(14px + env(safe-area-inset-bottom));
-    background:rgba(10,16,12,.75);
+    background:var(--bar);
     backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
     border-top:1px solid var(--line);
   }
@@ -165,13 +195,13 @@
   }
   .btn:active{transform:scale(.96);}
   .btn.primary{
-    flex:1;background:var(--gold);color:#1A1608;border-color:var(--gold);
-    box-shadow:0 4px 20px rgba(228,181,74,.3);
+    flex:1;background:var(--gold);color:var(--on-gold);border-color:var(--gold);
+    box-shadow:0 4px 20px rgba(240,185,62,.3);
   }
 
-  /* Fiche d'édition (feuille en bas) */
+  /* Fiche joueur (feuille en bas) */
   .overlay{
-    position:fixed;inset:0;background:rgba(4,8,5,.7);
+    position:fixed;inset:0;background:rgba(4,8,5,.6);
     backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
     display:none;align-items:flex-end;justify-content:center;z-index:10;
   }
@@ -190,7 +220,7 @@
   .sheet input{
     width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;
     font-family:'Outfit',sans-serif;font-size:1rem;margin-bottom:18px;
-    background:rgba(0,0,0,.3);color:var(--text);
+    background:var(--field);color:var(--text);
   }
   .sheet input:focus{outline:2px solid var(--gold);outline-offset:-1px;}
   .swatches{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:22px;}
@@ -199,18 +229,25 @@
     transition:transform .12s;
   }
   .swatch.on{border-color:var(--text);transform:scale(1.12);}
+  .sheet-tools{display:none;gap:10px;margin-bottom:12px;}
+  .sheet-tools.show{display:flex;}
+  .sheet-tools .btn{flex:1;font-size:.9rem;}
+  .sheet-tools .zero{color:var(--gold);border-color:var(--line);}
+  .sheet-tools .danger{color:var(--red);border-color:rgba(222,58,38,.35);background:rgba(222,58,38,.08);}
   .sheet-actions{display:flex;gap:10px;}
   .sheet-actions .btn{flex:1;}
   .sheet-actions .btn.primary{flex:1.4;}
-  .sheet-actions .btn.danger{color:var(--red);border-color:rgba(255,122,107,.4);background:rgba(255,122,107,.08);}
 </style>
 </head>
 <body>
 
 <main>
   <header>
-    <h1><span class="pips">♠♥</span> Compteur de cartes</h1>
-    <div class="sub">Jusqu'à 6 joueurs</div>
+    <div>
+      <h1><span class="pips">♠♥</span> Compteur de cartes</h1>
+      <div class="sub">Jusqu'à 6 joueurs</div>
+    </div>
+    <button class="theme-btn" id="themeBtn" aria-label="Changer de thème">☀</button>
   </header>
 
   <div class="step-wrap">
@@ -232,7 +269,7 @@
   </div>
 </div>
 
-<!-- Feuille ajout/édition -->
+<!-- Feuille ajout/paramètres joueur -->
 <div class="overlay" id="overlay">
   <div class="sheet">
     <h2 id="sheetTitle">Nouveau joueur</h2>
@@ -240,8 +277,11 @@
     <input type="text" id="nameInput" maxlength="14" placeholder="Ex. : Chantal" autocomplete="off">
     <label>Couleur</label>
     <div class="swatches" id="swatches"></div>
+    <div class="sheet-tools" id="sheetTools">
+      <button class="btn zero" id="zeroBtn">↺ Score à 0</button>
+      <button class="btn danger" id="deleteBtn">✕ Retirer</button>
+    </div>
     <div class="sheet-actions">
-      <button class="btn danger" id="deleteBtn" style="display:none">Retirer</button>
       <button class="btn" id="cancelBtn">Annuler</button>
       <button class="btn primary" id="saveBtn">Enregistrer</button>
     </div>
@@ -249,7 +289,7 @@
 </div>
 
 <script>
-const COLORS = ['#FF7A6B','#5BA8FF','#FFC94D','#C39BFF','#3FE0B5','#FF8FC2','#9BE86E','#9FB4CC'];
+const COLORS = ['#FF4B38','#2E9BFF','#FFB300','#B14BFF','#00E6A0','#FF4D9D','#7FE62E','#00CFE8'];
 const STEPS = [1,5,10,25,50,100];
 const PIPS = ['♠','♥','♦','♣','♠','♥'];
 
@@ -264,19 +304,51 @@ const stepBar = document.getElementById('stepBar');
 const overlay = document.getElementById('overlay');
 const nameInput = document.getElementById('nameInput');
 const swatchesEl = document.getElementById('swatches');
+const sheetTools = document.getElementById('sheetTools');
 
-// --- Bonds ---
+// --- Thème clair / sombre ---
+const themeBtn = document.getElementById('themeBtn');
+let theme = localStorage.getItem('cc-theme') || 'dark';
+function applyTheme(){
+  document.documentElement.dataset.theme = theme;
+  themeBtn.textContent = theme === 'dark' ? '☀' : '☾';
+  document.getElementById('themeColor').content = theme === 'dark' ? '#0A100C' : '#F5F2E9';
+  localStorage.setItem('cc-theme', theme);
+}
+themeBtn.onclick = () => { theme = theme === 'dark' ? 'light' : 'dark'; applyTheme(); };
+applyTheme();
+
+// --- Bonds prédéfinis + bond personnalisé ---
 STEPS.forEach(s => {
   const b = document.createElement('button');
   b.className = 'chip' + (s === step ? ' on' : '');
   b.textContent = s;
   b.onclick = () => {
     step = s;
-    stepBar.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', +c.textContent === s));
-    render();
+    customStep.value = '';
+    refreshChips();
   };
   stepBar.appendChild(b);
 });
+const customStep = document.createElement('input');
+customStep.className = 'chip chip-input';
+customStep.type = 'number';
+customStep.inputMode = 'numeric';
+customStep.placeholder = '…';
+customStep.setAttribute('aria-label', 'Bond personnalisé');
+customStep.oninput = () => {
+  const v = Math.abs(parseInt(customStep.value, 10));
+  if(!isNaN(v) && v > 0){ step = v; }
+  refreshChips();
+};
+stepBar.appendChild(customStep);
+
+function refreshChips(){
+  const custom = customStep.value !== '' && !isNaN(parseInt(customStep.value, 10));
+  stepBar.querySelectorAll('button.chip').forEach(c =>
+    c.classList.toggle('on', !custom && +c.textContent === step));
+  customStep.classList.toggle('on', custom);
+}
 
 // --- Pastilles de couleur ---
 COLORS.forEach(c => {
@@ -299,23 +371,16 @@ function render(popIndex){
     row.style.setProperty('--c', p.color);
     if(popIndex !== undefined) row.style.animation = 'none'; // pas de ré-entrée à chaque point
     row.innerHTML = `
-      <button class="who" aria-label="Modifier ${escapeHtml(p.name)}">
-        <span class="meta"><span class="pip">${PIPS[i]}</span><span class="name">${escapeHtml(p.name)}</span><span class="edit">✎</span></span>
+      <button class="who" aria-label="Paramètres de ${escapeHtml(p.name)}">
+        <span class="meta"><span class="pip">${PIPS[i]}</span><span class="name">${escapeHtml(p.name)}</span><span class="gear">⚙</span></span>
         <span class="score ${p.score < 0 ? 'neg' : ''}${i === popIndex ? ' pop' : ''}">${p.score}</span>
       </button>
       <div class="ctrl">
-        <button class="minus" aria-label="Enlever des points">−</button>
-        <input class="amount" type="number" inputmode="numeric" pattern="[0-9]*"
-               placeholder="${step}" aria-label="Montant personnalisé">
-        <button class="plus" aria-label="Ajouter des points">+</button>
+        <button class="minus" aria-label="Enlever ${step} points">−</button>
+        <button class="plus" aria-label="Ajouter ${step} points">+</button>
       </div>`;
-    const amountInput = row.querySelector('.amount');
-    const getAmount = () => {
-      const v = parseInt(amountInput.value, 10);
-      return (isNaN(v) ? step : Math.abs(v));
-    };
-    row.querySelector('.minus').onclick = () => { p.score -= getAmount(); render(i); };
-    row.querySelector('.plus').onclick  = () => { p.score += getAmount(); render(i); };
+    row.querySelector('.minus').onclick = () => { p.score -= step; render(i); };
+    row.querySelector('.plus').onclick  = () => { p.score += step; render(i); };
     row.querySelector('.who').onclick   = () => openSheet(i);
     list.appendChild(row);
   });
@@ -328,13 +393,13 @@ function escapeHtml(s){
 function openSheet(index){
   editIndex = index;
   const isEdit = index !== null;
-  document.getElementById('sheetTitle').textContent = isEdit ? 'Modifier le joueur' : 'Nouveau joueur';
-  document.getElementById('deleteBtn').style.display = isEdit ? 'block' : 'none';
+  document.getElementById('sheetTitle').textContent = isEdit ? 'Paramètres du joueur' : 'Nouveau joueur';
+  sheetTools.classList.toggle('show', isEdit);
   nameInput.value = isEdit ? players[index].name : '';
   selColor = isEdit ? players[index].color : COLORS[players.length % COLORS.length];
   swatchesEl.querySelectorAll('.swatch').forEach((s, i) => s.classList.toggle('on', COLORS[i] === selColor));
   overlay.classList.add('open');
-  setTimeout(() => nameInput.focus(), 100);
+  if(!isEdit) setTimeout(() => nameInput.focus(), 100);
 }
 
 document.getElementById('addBtn').onclick = () => {
@@ -353,6 +418,12 @@ document.getElementById('saveBtn').onclick = () => {
   }
   overlay.classList.remove('open');
   render();
+};
+
+document.getElementById('zeroBtn').onclick = () => {
+  players[editIndex].score = 0;
+  overlay.classList.remove('open');
+  render(editIndex);
 };
 
 document.getElementById('deleteBtn').onclick = () => {
