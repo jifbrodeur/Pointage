@@ -78,6 +78,7 @@
   }
   h1 .pips{color:var(--gold);font-size:1rem;letter-spacing:.1em;}
   .sub{font-size:.75rem;color:var(--dim);margin-top:1px;}
+  .head-ctrl{display:flex;align-items:center;gap:10px;flex-shrink:0;}
   .settings-btn{
     width:42px;height:42px;border-radius:12px;flex-shrink:0;cursor:pointer;
     border:1px solid var(--line);background:var(--surface-2);color:var(--text);
@@ -142,13 +143,15 @@
   /* Rangées de joueurs — pleine largeur */
   .list{display:flex;flex-direction:column;gap:10px;}
   .row{
-    display:flex;align-items:stretch;gap:12px;
+    display:flex;flex-direction:column;gap:10px;
     background:var(--surface);
     border:1px solid var(--line);
-    border-radius:18px;padding:12px 12px 12px 0;
+    border-radius:18px;padding:12px 12px 12px 16px;
     position:relative;overflow:hidden;
     animation:enter .35s cubic-bezier(.2,.8,.3,1) both;
   }
+  .row-top{display:flex;align-items:center;gap:10px;position:relative;z-index:1;}
+  .row-bot{display:flex;align-items:center;justify-content:space-between;gap:10px;position:relative;z-index:1;}
   @keyframes enter{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
   /* rail de couleur + halo du joueur */
   .row::before{
@@ -162,21 +165,19 @@
     opacity:.16;
   }
   .who{
-    flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;
-    gap:2px;padding-left:16px;background:none;border:none;text-align:left;
+    flex:1;min-width:0;display:flex;align-items:center;gap:8px;
+    background:none;border:none;text-align:left;padding:0;
     color:var(--text);cursor:pointer;font-family:'Outfit',sans-serif;
-    position:relative;z-index:1;
   }
-  .who .meta{
-    display:flex;align-items:center;gap:6px;font-size:.82rem;
-    font-weight:600;color:var(--dim);min-width:0;
+  .who .pip{color:var(--c);font-size:1.1rem;flex-shrink:0;}
+  .who .name{
+    font-size:1.2rem;font-weight:700;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   }
-  .who .pip{color:var(--c);font-size:.9rem;}
-  .who .name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .gear-btn{
-    width:42px;height:42px;border-radius:12px;flex-shrink:0;align-self:center;
+    width:42px;height:42px;border-radius:12px;flex-shrink:0;
     border:1px solid var(--line);background:var(--surface-2);color:var(--dim);
-    font-size:1.25rem;cursor:pointer;position:relative;z-index:1;
+    font-size:1.25rem;cursor:pointer;
     display:flex;align-items:center;justify-content:center;
     transition:transform .15s;
   }
@@ -190,10 +191,10 @@
   .score.pop{animation:pop .3s cubic-bezier(.2,.8,.3,1);}
   @keyframes pop{40%{transform:scale(1.14);}}
 
-  .ctrl{display:flex;align-items:center;gap:6px;flex-shrink:0;position:relative;z-index:1;}
+  .ctrl{display:flex;align-items:center;gap:6px;flex-shrink:0;}
   .ctrl button{
-    width:48px;height:52px;border-radius:14px;border:1px solid var(--line);
-    background:var(--surface-2);font-size:1.5rem;font-weight:700;cursor:pointer;
+    width:42px;height:42px;border-radius:12px;border:1px solid var(--line);
+    background:var(--surface-2);font-size:1.4rem;font-weight:700;cursor:pointer;
     font-family:'Outfit',sans-serif;transition:transform .1s,background .15s;
     display:flex;align-items:center;justify-content:center;
   }
@@ -201,9 +202,9 @@
   .ctrl .minus{color:var(--red);}
   .ctrl .plus{color:var(--green);}
   .ctrl .amount{
-    width:52px;height:52px;border-radius:14px;border:1px solid var(--line);
+    width:42px;height:42px;border-radius:12px;border:1px solid var(--line);
     background:var(--field);color:var(--text);text-align:center;
-    font-family:'Outfit',sans-serif;font-weight:600;font-size:1rem;
+    font-family:'Outfit',sans-serif;font-weight:600;font-size:.95rem;
     -moz-appearance:textfield;appearance:textfield;
   }
   .ctrl .amount::-webkit-outer-spin-button,
@@ -287,7 +288,13 @@
       <h1><span class="pips">♠♥</span> Compteur de cartes</h1>
       <div class="sub">Jusqu'à 6 joueurs</div>
     </div>
-    <button class="settings-btn" id="settingsBtn" aria-label="Paramètres de l'application">⚙</button>
+    <div class="head-ctrl">
+      <button class="settings-btn" id="settingsBtn" aria-label="Paramètres de l'application">⚙</button>
+      <button class="switch" id="themeBtn" role="switch" aria-checked="true" aria-label="Mode sombre">
+        <span class="sw-icon">☀</span><span class="sw-icon">☾</span>
+        <span class="knob" id="knob">☾</span>
+      </button>
+    </div>
   </header>
 
   <div class="step-wrap">
@@ -313,13 +320,6 @@
 <div class="overlay" id="settingsOverlay">
   <div class="sheet">
     <h2>Paramètres</h2>
-    <div class="set-row">
-      <span class="set-label">Thème clair / sombre</span>
-      <button class="switch" id="themeBtn" role="switch" aria-checked="true" aria-label="Mode sombre">
-        <span class="sw-icon">☀</span><span class="sw-icon">☾</span>
-        <span class="knob" id="knob">☾</span>
-      </button>
-    </div>
     <label>Bond par défaut</label>
     <div class="step-bar" id="defaultStepBar"></div>
     <div class="sheet-actions" style="margin-top:22px">
@@ -457,16 +457,20 @@ function render(popIndex){
     row.style.setProperty('--c', p.color);
     if(popIndex !== undefined) row.style.animation = 'none'; // pas de ré-entrée à chaque point
     row.innerHTML = `
-      <button class="who" aria-label="Paramètres de ${escapeHtml(p.name)}">
-        <span class="meta"><span class="pip">${PIPS[i]}</span><span class="name">${escapeHtml(p.name)}</span></span>
+      <div class="row-top">
+        <button class="who" aria-label="Paramètres de ${escapeHtml(p.name)}">
+          <span class="pip">${PIPS[i]}</span><span class="name">${escapeHtml(p.name)}</span>
+        </button>
+        <button class="gear-btn" aria-label="Paramètres de ${escapeHtml(p.name)}">⚙</button>
+      </div>
+      <div class="row-bot">
         <span class="score ${p.score < 0 ? 'neg' : ''}${i === popIndex ? ' pop' : ''}">${p.score}</span>
-      </button>
-      <button class="gear-btn" aria-label="Paramètres de ${escapeHtml(p.name)}">⚙</button>
-      <div class="ctrl">
-        <button class="minus" aria-label="Enlever des points">−</button>
-        <input class="amount" type="number" inputmode="numeric" pattern="[0-9]*"
-               placeholder="${step}" aria-label="Montant personnalisé">
-        <button class="plus" aria-label="Ajouter des points">+</button>
+        <div class="ctrl">
+          <button class="minus" aria-label="Enlever des points">−</button>
+          <input class="amount" type="number" inputmode="numeric" pattern="[0-9]*"
+                 placeholder="${step}" aria-label="Montant personnalisé">
+          <button class="plus" aria-label="Ajouter des points">+</button>
+        </div>
       </div>`;
     const amountInput = row.querySelector('.amount');
     amountInput.value = p.amt || '';
