@@ -381,7 +381,7 @@
       </button>
     </div>
     <div class="title-wrap">
-      <h1><span class="pips">♠♥</span> <span id="tTitle">Score Keeper</span></h1>
+      <h1><span class="pips" id="pipL">♠♥</span> <span id="tTitle">Score Keeper</span> <span class="pips" id="pipR">♦♣</span></h1>
       <div class="sub" id="gameSub" style="display:none"></div>
     </div>
   </header>
@@ -411,6 +411,8 @@
     <h2 id="tSettings">Paramètres</h2>
     <label for="gameInput" id="tGame">Nom du jeu</label>
     <input type="text" id="gameInput" maxlength="30" autocomplete="off">
+    <label id="tType">Type de jeu</label>
+    <div class="step-bar" id="typeBar" style="margin-bottom:18px"></div>
     <label for="goalInput" id="tGoal">Points pour gagner</label>
     <input type="number" id="goalInput" inputmode="numeric" min="1">
     <label id="tDefaultStep">Bond par défaut</label>
@@ -459,6 +461,7 @@ const I18N = {
     game:"Nom du jeu", goal:"Points pour gagner", goalPh:"Aucun",
     winFmt:"🏆 {n} gagne la partie!",
     skinLabel:"Style", skins:{sobre:"Sobre",modern:"Moderne",retro:"Années 80",mono:"Mono"},
+    typeLabel:"Type de jeu", types:{cards:"Cartes",board:"Plateau",dice:"Dés",other:"Autre"},
     settings:"Paramètres", defaultStep:"Bond par défaut", lang:"Langue",
     maxNote:"Jusqu'à 6 joueurs", close:"Fermer",
     newPlayer:"Nouveau joueur", playerSettings:"Paramètres du joueur",
@@ -476,6 +479,7 @@ const I18N = {
     game:"Game name", goal:"Points to win", goalPh:"None",
     winFmt:"🏆 {n} wins the game!",
     skinLabel:"Style", skins:{sobre:"Classic",modern:"Modern",retro:"80s",mono:"Mono"},
+    typeLabel:"Game type", types:{cards:"Cards",board:"Board",dice:"Dice",other:"Other"},
     settings:"Settings", defaultStep:"Default step", lang:"Language",
     maxNote:"Up to 6 players", close:"Close",
     newPlayer:"New player", playerSettings:"Player settings",
@@ -493,6 +497,7 @@ const I18N = {
     game:"Nome del gioco", goal:"Punti per vincere", goalPh:"Nessuno",
     winFmt:"🏆 {n} vince la partita!",
     skinLabel:"Stile", skins:{sobre:"Sobrio",modern:"Moderno",retro:"Anni 80",mono:"Mono"},
+    typeLabel:"Tipo di gioco", types:{cards:"Carte",board:"Tavolo",dice:"Dadi",other:"Altro"},
     settings:"Impostazioni", defaultStep:"Passo predefinito", lang:"Lingua",
     maxNote:"Fino a 6 giocatori", close:"Chiudi",
     newPlayer:"Nuovo giocatore", playerSettings:"Impostazioni giocatore",
@@ -510,6 +515,7 @@ const I18N = {
     game:"Nombre del juego", goal:"Puntos para ganar", goalPh:"Ninguno",
     winFmt:"🏆 ¡{n} gana la partida!",
     skinLabel:"Estilo", skins:{sobre:"Sobrio",modern:"Moderno",retro:"Años 80",mono:"Mono"},
+    typeLabel:"Tipo de juego", types:{cards:"Cartas",board:"Tablero",dice:"Dados",other:"Otro"},
     settings:"Ajustes", defaultStep:"Salto predeterminado", lang:"Idioma",
     maxNote:"Hasta 6 jugadores", close:"Cerrar",
     newPlayer:"Nuevo jugador", playerSettings:"Ajustes del jugador",
@@ -595,6 +601,29 @@ goalInput.oninput = () => {
 };
 updateGameSub();
 
+// --- Type de jeu (icônes du titre) ---
+const TYPE_ICONS = {cards:['♠♥','♦♣'], board:['♜','♞'], dice:['⚄','⚂'], other:['★','★']};
+let gameType = localStorage.getItem('cc-type');
+if(!TYPE_ICONS[gameType]) gameType = 'cards';
+function applyType(){
+  document.getElementById('pipL').textContent = TYPE_ICONS[gameType][0];
+  document.getElementById('pipR').textContent = TYPE_ICONS[gameType][1];
+  localStorage.setItem('cc-type', gameType);
+}
+const typeBar = document.getElementById('typeBar');
+Object.keys(TYPE_ICONS).forEach(k => {
+  const b = document.createElement('button');
+  b.className = 'chip' + (k === gameType ? ' on' : '');
+  b.dataset.type = k;
+  b.onclick = () => {
+    gameType = k;
+    applyType();
+    typeBar.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', c.dataset.type === k));
+  };
+  typeBar.appendChild(b);
+});
+applyType();
+
 // --- Célébration de victoire ---
 function celebrate(name){
   const c = document.createElement('div');
@@ -653,6 +682,8 @@ function applyLang(){
   document.getElementById('tGoal').textContent = L.goal;
   document.getElementById('goalInput').placeholder = L.goalPh;
   document.getElementById('tDefaultStep').textContent = L.defaultStep;
+  document.getElementById('tType').textContent = L.typeLabel;
+  typeBar.querySelectorAll('.chip').forEach(c => c.textContent = L.types[c.dataset.type]);
   document.getElementById('tSkin').textContent = L.skinLabel;
   skinBar.querySelectorAll('.chip').forEach(c => c.textContent = L.skins[c.dataset.skin]);
   document.getElementById('tLang').textContent = L.lang;
